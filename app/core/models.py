@@ -89,3 +89,11 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Shtab(models.Model):
+    """Shtab object"""
+    title = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.title

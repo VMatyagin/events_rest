@@ -84,3 +84,11 @@ class ModelTests(TestCase):
 
         exp_path = f'uploads/recipe/{uuid}.jpg'
         self.assertEqual(file_path, exp_path)
+
+    def test_shtab_str(self):
+        """test the shtab string representaion"""
+        shtab = models.Shtab.objects.create(
+            title='Shtab Petra'
+        )
+
+        self.assertEqual(str(shtab), shtab.title)
