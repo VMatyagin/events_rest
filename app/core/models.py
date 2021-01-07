@@ -2,6 +2,7 @@ import uuid
 import os
 
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, \
     PermissionsMixin
 from django.conf import settings
@@ -13,6 +14,11 @@ def recipe_image_file_path(instance, filename):
     filename = f'{uuid.uuid4()}.{ext}'
 
     return os.path.join('uploads/recipe/', filename)
+
+
+class AutoDateTimeField(models.DateTimeField):
+    def pre_save(self, model_instance, add):
+        return timezone.now()
 
 
 class UserManager(BaseUserManager):
@@ -43,6 +49,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    created_at = models.DateField(default=timezone.now)
+    updated_at = AutoDateTimeField(default=timezone.now)
 
     objects = UserManager()
 
@@ -94,6 +102,8 @@ class Recipe(models.Model):
 class Shtab(models.Model):
     """Shtab object"""
     title = models.CharField(max_length=255)
+    created_at = models.DateField(default=timezone.now)
+    updated_at = AutoDateTimeField(default=timezone.now)
 
     def __str__(self):
         return self.title
@@ -103,6 +113,8 @@ class Area(models.Model):
     """Area (direction) object"""
     title = models.CharField(max_length=255)
     shortTitle = models.CharField(max_length=10)
+    created_at = models.DateField(default=timezone.now)
+    updated_at = AutoDateTimeField(default=timezone.now)
 
     def __str__(self):
         return self.shortTitle
@@ -114,6 +126,8 @@ class Boec(models.Model):
     lastName = models.CharField(max_length=255)
     middleName = models.CharField(max_length=255, blank=True)
     DOB = models.IntegerField()
+    created_at = models.DateField(default=timezone.now)
+    updated_at = AutoDateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.lastName} {self.firstName} {self.middleName}"
@@ -127,6 +141,8 @@ class Brigade(models.Model):
     boec = models.ManyToManyField(Boec, blank=True)
     DOB = models.IntegerField()
     status = models.BooleanField(default=True)
+    created_at = models.DateField(default=timezone.now)
+    updated_at = AutoDateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.area.shortTitle} {self.title}"
