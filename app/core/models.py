@@ -117,3 +117,16 @@ class Boec(models.Model):
 
     def __str__(self):
         return f"{self.lastName} {self.firstName} {self.middleName}"
+
+
+class Brigade(models.Model):
+    """Brigade object"""
+    title = models.CharField(max_length=255)
+    area = models.ForeignKey(Area, on_delete=models.RESTRICT)
+    shtab = models.ForeignKey(Shtab, on_delete=models.RESTRICT)
+    boec = models.ManyToManyField(Boec, blank=True)
+    DOB = models.IntegerField()
+    status = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.area.shortTitle} {self.title}"

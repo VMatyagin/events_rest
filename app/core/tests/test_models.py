@@ -113,3 +113,20 @@ class ModelTests(TestCase):
 
         self.assertEqual(
             str(boec), f"{boec.lastName} {boec.firstName} {boec.middleName}")
+
+    def test_brigade_str(self):
+        """test the brigage representation"""
+        area = models.Area.objects.create(
+            title="First direction",
+            shortTitle='DFO'
+        )
+        shtab = models.Shtab.objects.create(
+            title='Shtab Petra'
+        )
+        brigade = models.Brigade.objects.create(
+            title='name',
+            DOB=0,
+            area=area,
+            shtab=shtab
+        )
+        self.assertEqual(str(brigade), f"{area.shortTitle} {brigade.title}")

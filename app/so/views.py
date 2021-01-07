@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from core.models import Boec, Shtab, Area
+from core.models import Boec, Brigade, Shtab, Area
 from so import serializers
 
 
@@ -40,3 +40,15 @@ class BoecViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Return ordered by lastName objects"""
         return self.queryset.order_by('-lastName')
+
+
+class BrigadeViewSet(viewsets.ModelViewSet):
+    """manage brigades in the database"""
+    serializer_class = serializers.BrigadeSerializer
+    queryset = Brigade.objects.all()
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated, )
+
+    def get_queryset(self):
+        """Return ordered by title objects"""
+        return self.queryset.order_by('-title')
