@@ -146,3 +146,28 @@ class Brigade(models.Model):
 
     def __str__(self):
         return f"{self.area.shortTitle} {self.title}"
+
+
+class Event(models.Model):
+    """Event model"""
+    class EventStatus(models.IntegerChoices):
+        JUST_CREATED = 0
+        PASSED = 1
+        NOT_PASSED = 2
+
+    status = models.IntegerField(
+        choices=EventStatus.choices, default=EventStatus.JUST_CREATED)
+    title = models.CharField(max_length=255)
+    description = models.CharField(max_length=255, blank=True)
+    location = models.CharField(max_length=255, blank=True)
+    shtab = models.ForeignKey(Shtab, on_delete=models.SET_NULL, null=True)
+    start = models.IntegerField(null=True)
+    end = models.IntegerField(null=True)
+    organizer = models.ManyToManyField(
+        Boec, blank=True, related_name='organizers_list')
+    volonteer = models.ManyToManyField(
+        Boec, blank=True, related_name='volonteers_list')
+    visibility = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.title
