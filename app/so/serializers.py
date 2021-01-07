@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from core.models import Area, Shtab
+from core.models import Area, Boec, Shtab
 
 
 class ShtabSerializer(serializers.ModelSerializer):
@@ -18,4 +18,13 @@ class AreaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Area
         fields = ('id', 'title', 'shortTitle')
+        read_only_fields = ('id',)
+
+
+class BoecSerializer(serializers.ModelSerializer):
+    """serializer for beec objects"""
+
+    class Meta:
+        model = Boec
+        fields = ('id', 'firstName', 'lastName', 'middleName', 'DOB')
         read_only_fields = ('id',)

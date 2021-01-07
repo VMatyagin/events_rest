@@ -106,3 +106,14 @@ class Area(models.Model):
 
     def __str__(self):
         return self.shortTitle
+
+
+class Boec(models.Model):
+    """Boec object"""
+    firstName = models.CharField(max_length=255)
+    lastName = models.CharField(max_length=255)
+    middleName = models.CharField(max_length=255, blank=True)
+    DOB = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.lastName} {self.firstName} {self.middleName}"

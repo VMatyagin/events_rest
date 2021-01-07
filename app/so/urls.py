@@ -7,6 +7,7 @@ router = SimpleRouter()
 
 router.register('shtab', views.ShtabViewSet)
 router.register('area', views.AreaViewSet)
+router.register('boec', views.BoecViewSet)
 
 app_name = 'so'
 

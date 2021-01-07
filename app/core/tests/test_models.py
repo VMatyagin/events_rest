@@ -101,3 +101,15 @@ class ModelTests(TestCase):
         )
 
         self.assertEqual(str(area), area.shortTitle)
+
+    def test_boec_str(self):
+        """test the boec's represenation"""
+        boec = models.Boec.objects.create(
+            firstName='firstName',
+            lastName='lastName',
+            middleName='middleName',
+            DOB=0
+        )
+
+        self.assertEqual(
+            str(boec), f"{boec.lastName} {boec.firstName} {boec.middleName}")
