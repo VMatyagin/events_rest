@@ -92,3 +92,12 @@ class ModelTests(TestCase):
         )
 
         self.assertEqual(str(shtab), shtab.title)
+
+    def test_area_str(self):
+        """test the areas string representaion"""
+        area = models.Area.objects.create(
+            title="First direction",
+            shortTitle='DFO'
+        )
+
+        self.assertEqual(str(area), area.shortTitle)

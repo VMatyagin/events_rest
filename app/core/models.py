@@ -97,3 +97,12 @@ class Shtab(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Area(models.Model):
+    """Area (direction) object"""
+    title = models.CharField(max_length=255)
+    shortTitle = models.CharField(max_length=10)
+
+    def __str__(self):
+        return self.shortTitle

@@ -6,6 +6,7 @@ from so import views
 router = SimpleRouter()
 
 router.register('shtab', views.ShtabViewSet)
+router.register('area', views.AreaViewSet)
 
 app_name = 'so'
 
