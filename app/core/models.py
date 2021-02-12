@@ -125,7 +125,7 @@ class Boec(models.Model):
     firstName = models.CharField(max_length=255)
     lastName = models.CharField(max_length=255)
     middleName = models.CharField(max_length=255, blank=True)
-    DOB = models.IntegerField()
+    DOB = models.DateField(null=True, blank=True)
     created_at = models.DateField(default=timezone.now)
     updated_at = AutoDateTimeField(default=timezone.now)
 
@@ -139,7 +139,7 @@ class Brigade(models.Model):
     area = models.ForeignKey(Area, on_delete=models.RESTRICT)
     shtab = models.ForeignKey(Shtab, on_delete=models.RESTRICT)
     boec = models.ManyToManyField(Boec, blank=True)
-    DOB = models.IntegerField()
+    DOB = models.DateField(null=True, blank=True)
     status = models.BooleanField(default=True)
     created_at = models.DateField(default=timezone.now)
     updated_at = AutoDateTimeField(default=timezone.now)
@@ -161,8 +161,8 @@ class Event(models.Model):
     description = models.CharField(max_length=255, blank=True)
     location = models.CharField(max_length=255, blank=True)
     shtab = models.ForeignKey(Shtab, on_delete=models.SET_NULL, null=True)
-    start = models.IntegerField(null=True)
-    end = models.IntegerField(null=True)
+    start = models.DateTimeField(null=True, blank=True)
+    end = models.DateTimeField(null=True, blank=True)
     organizer = models.ManyToManyField(
         Boec, blank=True, related_name='organizers_list')
     volonteer = models.ManyToManyField(

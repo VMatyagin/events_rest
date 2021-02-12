@@ -43,19 +43,16 @@ class PrivateBoecApiTest(TestCase):
             firstName='firstName',
             lastName='lastName',
             middleName='middleName',
-            DOB=0
         )
         Boec.objects.create(
             firstName='YfirstName',
             lastName='lastName',
             middleName='middleName',
-            DOB=0
         )
         Boec.objects.create(
             firstName='AfirstName',
             lastName='lastName',
             middleName='middleName',
-            DOB=0
         )
 
         res = self.client.get(BOEC_URL)
@@ -72,7 +69,6 @@ class PrivateBoecApiTest(TestCase):
             "firstName": 'AfirstName',
             "lastName": 'lastName',
             "middleName": 'middleName',
-            "DOB": 0
         }
         self.client.post(BOEC_URL, payload)
         exists = Boec.objects.filter(

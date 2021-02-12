@@ -108,7 +108,6 @@ class ModelTests(TestCase):
             firstName='firstName',
             lastName='lastName',
             middleName='middleName',
-            DOB=0
         )
 
         self.assertEqual(
@@ -125,7 +124,6 @@ class ModelTests(TestCase):
         )
         brigade = models.Brigade.objects.create(
             title='name',
-            DOB=0,
             area=area,
             shtab=shtab
         )

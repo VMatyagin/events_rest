@@ -52,19 +52,16 @@ class PrivateBrigadeApiTest(TestCase):
 
         Brigade.objects.create(
             title='name',
-            DOB=0,
             area=sample_area(),
             shtab=sample_shtab()
         )
         Brigade.objects.create(
             title='yname',
-            DOB=0,
             area=sample_area(),
             shtab=sample_shtab()
         )
         Brigade.objects.create(
             title='aname',
-            DOB=0,
             area=sample_area(),
             shtab=sample_shtab()
         )
@@ -82,7 +79,6 @@ class PrivateBrigadeApiTest(TestCase):
         shtab = sample_shtab()
         payload = {
             "title": 'success',
-            "DOB": 0,
             "area": area.id,
             'shtab': shtab.id
         }
