@@ -41,12 +41,15 @@ INSTALLED_APPS = [
     'user',
     'recipe',
     'so',
-    'event'
+    'event',
+    'corsheaders'
+
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -71,6 +74,11 @@ TEMPLATES = [
         },
     },
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'core.pagination.StyledPagination',
+    'PAGE_SIZE': 20
+}
 
 WSGI_APPLICATION = 'app.wsgi.application'
 
@@ -128,3 +136,8 @@ MEDIA_ROOT = '/vol/web/media'
 STATIC_ROOT = '/vol/web/static'
 
 AUTH_USER_MODEL = 'core.User'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
+]
