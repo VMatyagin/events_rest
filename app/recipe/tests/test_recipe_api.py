@@ -85,7 +85,7 @@ class PrivateRecipeApiTest(TestCase):
         serializer = RecipeSerializer(recipes, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(res.data['items'], serializer.data)
 
     def test_reciped_limited_to_user(self):
         """test retrieving recipes for user"""
@@ -102,8 +102,8 @@ class PrivateRecipeApiTest(TestCase):
         serializer = RecipeSerializer(recipes, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(res.data), 1)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(res.data['count'], 1)
+        self.assertEqual(res.data['items'], serializer.data)
 
     def test_view_recipe_detail(self):
         """Test viewing a recipe detail"""
@@ -224,9 +224,9 @@ class PrivateRecipeApiTest(TestCase):
         serializer1 = RecipeSerializer(recipe1)
         serializer2 = RecipeSerializer(recipe2)
         serializer3 = RecipeSerializer(recipe3)
-        self.assertIn(serializer1.data, res.data)
-        self.assertIn(serializer2.data, res.data)
-        self.assertNotIn(serializer3.data, res.data)
+        self.assertIn(serializer1.data, res.data['items'])
+        self.assertIn(serializer2.data, res.data['items'])
+        self.assertNotIn(serializer3.data, res.data['items'])
 
     def test_filter_recipes_by_ingredients(self):
         """Test returning recipes with specific ingredients"""
@@ -246,9 +246,9 @@ class PrivateRecipeApiTest(TestCase):
         serializer1 = RecipeSerializer(recipe1)
         serializer2 = RecipeSerializer(recipe2)
         serializer3 = RecipeSerializer(recipe3)
-        self.assertIn(serializer1.data, res.data)
-        self.assertIn(serializer2.data, res.data)
-        self.assertNotIn(serializer3.data, res.data)
+        self.assertIn(serializer1.data, res.data['items'])
+        self.assertIn(serializer2.data, res.data['items'])
+        self.assertNotIn(serializer3.data, res.data['items'])
 
 
 class RecipeImageUploadTests(TestCase):

@@ -54,7 +54,7 @@ class PrivateEventApiTest(TestCase):
         serializer = EventSerializer(list, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
+        self.assertEqual(res.data['items'], serializer.data)
 
     def test_create_event_successful(self):
         """test creating a new event"""
