@@ -1,89 +1,45 @@
-from django.test import TestCase
-from django.contrib.auth import get_user_model
-from unittest.mock import patch
-
 from core import models
+from django.contrib.auth import get_user_model
+from django.test import TestCase
 
 
-def sample_user(email='test@email.com', password='testpass'):
+def sample_user(vk_id='test'):
     """create a sample user"""
-    return get_user_model().objects.create_user(email, password)
+    return get_user_model().objects.create_user(vk_id=vk_id)
 
 
 class ModelTests(TestCase):
 
-    def test_create_user_witht_email_sussessfull(self):
-        """Test creating a new user with an email is successfulll"""
-        email = 'test@test.com'
-        password = 'Testpass123'
+    def test_create_user_witht_vk_id_sussessfull(self):
+        """Test creating a new user with an vk_id is successfulll"""
+        vk_id = 'test'
         user = get_user_model().objects.create_user(
-            email=email,
-            password=password
+            vk_id=vk_id,
         )
 
-        self.assertEqual(user.email, email)
-        self.assertTrue(user.check_password(password))
-
-    def test_new_user_email_noramized(self):
-        """test the email for a new user is normalized"""
-        email = 'test@TEST.com'
-        user = get_user_model().objects.create_user(
-            email,
-            'test123'
-        )
-        self.assertEqual(user.email, email.lower())
+        self.assertEqual(user.vk_id, vk_id)
+        self.assertTrue(not user.has_usable_password())
 
     def test_new_user_invalid_email(self):
-        """test creating user with no email raises error"""
+        """test creating user with no id raises error"""
         with self.assertRaises(ValueError):
-            get_user_model().objects.create_user(None, 'test')
+            get_user_model().objects.create_user(None)
 
     def test_create_new_superuser(self):
         """test creating a new superuser"""
         user = get_user_model().objects.create_superuser(
-            'test@super.com',
+            'test',
             'test123'
         )
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
 
-    def test_tag_str(self):
-        """test the tag string representation"""
-        tag = models.Tag.objects.create(
-            user=sample_user(),
-            name='Vegan'
-        )
-
-        self.assertEqual(str(tag), tag.name)
-
-    def test_ingredient_str(self):
-        """test the ingredient string representation"""
-        ingredient = models.Ingredient.objects.create(
-            user=sample_user(),
-            name='Cucumber'
-        )
-
-        self.assertEqual(str(ingredient), ingredient.name)
-
-    def test_recipe_str(self):
-        recipe = models.Recipe.objects.create(
-            user=sample_user(),
-            title='Steak and mushroom sauce',
-            time_minutes=5,
-            price=5.00
-        )
-
-        self.assertEqual(str(recipe), recipe.title)
-
-    @patch('uuid.uuid4')
-    def test_recipe_file_name_uuid(self, mock_uuid):
-        """Test that image is saved in the correct location"""
-        uuid = 'test-uuid'
-        mock_uuid.return_value = uuid
-        file_path = models.recipe_image_file_path(None, 'myimage.jpg')
-
-        exp_path = f'uploads/recipe/{uuid}.jpg'
-        self.assertEqual(file_path, exp_path)
+    def test_create_new_superuser_without_pass(self):
+        """test creating a new superuser without pass is failed"""
+        with self.assertRaises(ValueError):
+            get_user_model().objects.create_superuser(
+                'test'
+            )
 
     def test_shtab_str(self):
         """test the shtab string representaion"""
