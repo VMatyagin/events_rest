@@ -9,6 +9,7 @@ router.register('shtab', views.ShtabViewSet)
 router.register('area', views.AreaViewSet)
 router.register('boec', views.BoecViewSet)
 router.register('brigade', views.BrigadeViewSet)
+router.register('season', views.SeasonViewSet)
 
 app_name = 'so'
 

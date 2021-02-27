@@ -109,7 +109,7 @@ class Brigade(models.Model):
     updated_at = AutoDateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"{self.area.shortTitle} {self.title}"
+        return self.title
 
 
 class Event(models.Model):
@@ -135,3 +135,13 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Season(models.Model):
+    """Season model"""
+    boec = models.ForeignKey(Boec, on_delete=models.RESTRICT)
+    brigade = models.ForeignKey(Brigade, on_delete=models.RESTRICT)
+    year = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.year} - {self.brigade.title} {self.boec.lastName}"

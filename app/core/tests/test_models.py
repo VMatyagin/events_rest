@@ -83,7 +83,7 @@ class ModelTests(TestCase):
             area=area,
             shtab=shtab
         )
-        self.assertEqual(str(brigade), f"{area.shortTitle} {brigade.title}")
+        self.assertEqual(str(brigade), brigade.title)
 
     def test_event_str(self):
         """test the event representation"""
@@ -93,3 +93,32 @@ class ModelTests(TestCase):
         )
 
         self.assertEqual(str(event), event.title)
+
+    def test_season_str(self):
+        """test the season representation"""
+        area = models.Area.objects.create(
+            title="First direction",
+            shortTitle='DFO'
+        )
+        shtab = models.Shtab.objects.create(
+            title='Shtab Petra'
+        )
+        brigade = models.Brigade.objects.create(
+            title='name',
+            area=area,
+            shtab=shtab
+        )
+
+        boec = models.Boec.objects.create(
+            firstName='firstName',
+            lastName='lastName',
+            middleName='middleName',
+        )
+
+        season = models.Season.objects.create(
+            boec=boec,
+            brigade=brigade,
+            year=2020
+        )
+        self.assertEqual(
+            str(season), f"{season.year} - {brigade.title} {boec.lastName}")

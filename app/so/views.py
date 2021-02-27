@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from core.authentication import VKAuthentication
 
-from core.models import Boec, Brigade, Shtab, Area
+from core.models import Boec, Brigade, Season, Shtab, Area
 from so import serializers
 
 
@@ -52,3 +52,15 @@ class BrigadeViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Return ordered by title objects"""
         return self.queryset.order_by('-title')
+
+
+class SeasonViewSet(viewsets.ModelViewSet):
+    """manage seasons in the database"""
+    serializer_class = serializers.SeasonSerializer
+    queryset = Season.objects.all()
+    authentication_classes = (VKAuthentication,)
+    permission_classes = (IsAuthenticated, )
+
+    def get_queryset(self):
+        """Return objects"""
+        return self.queryset

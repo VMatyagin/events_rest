@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from core.models import Area, Boec, Brigade, Shtab
+from core.models import Area, Boec, Brigade, Season, Shtab
 
 
 class ShtabSerializer(serializers.ModelSerializer):
@@ -41,3 +41,12 @@ class BrigadeSerializer(serializers.ModelSerializer):
         model = Brigade
         fields = ('id', 'title', 'shtab', 'area', 'DOB', 'boec', 'boec_count')
         read_only_fields = ('id', 'boec_count',)
+
+
+class SeasonSerializer(serializers.ModelSerializer):
+    """serializer for season objects"""
+
+    class Meta:
+        model = Season
+        fields = ('id', 'boec', 'brigade', 'year')
+        read_only_fields = ('id', )
