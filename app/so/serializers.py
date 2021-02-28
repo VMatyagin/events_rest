@@ -36,6 +36,8 @@ class BrigadeSerializer(serializers.ModelSerializer):
 
     def get_boec_count(self, obj):
         return obj.boec.count()
+        
+    boec = BoecSerializer(many=True, read_only=True)
 
     class Meta:
         model = Brigade
@@ -45,7 +47,6 @@ class BrigadeSerializer(serializers.ModelSerializer):
 
 class SeasonSerializer(serializers.ModelSerializer):
     """serializer for season objects"""
-
     class Meta:
         model = Season
         fields = ('id', 'boec', 'brigade', 'year')
