@@ -89,10 +89,17 @@ class UserAdmin(BaseUserAdmin):
     )
 
 
+class SeasonAdmin(admin.ModelAdmin):
+    ordering = ['id']
+    list_display = ['boec', 'brigade', 'year']
+    search_fields = ('boec__lastName', 'boec__firstName')
+    list_filter = ('brigade', 'year')
+
+
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Shtab)
 admin.site.register(models.Area)
 admin.site.register(models.Boec)
 admin.site.register(models.Brigade)
 admin.site.register(models.Event)
-admin.site.register(models.Season)
+admin.site.register(models.Season, SeasonAdmin)
