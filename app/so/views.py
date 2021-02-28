@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from core.authentication import VKAuthentication
+from rest_framework import filters
 
 from core.models import Boec, Brigade, Season, Shtab, Area
 from so import serializers
@@ -32,10 +33,16 @@ class AreaViewSet(viewsets.ModelViewSet):
 
 class BoecViewSet(viewsets.ModelViewSet):
     """manage boecs in the database"""
-    serializer_class = serializers.BoecSerializer
     queryset = Boec.objects.all()
     authentication_classes = (VKAuthentication,)
     permission_classes = (IsAuthenticated, )
+    filter_backends = [filters.SearchFilter]
+    search_fields = ('lastName', 'firstName')
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return serializers.BoecShortSerializer
+        return serializers.BoecSerializer
 
     def get_queryset(self):
         """Return ordered by lastName objects"""
