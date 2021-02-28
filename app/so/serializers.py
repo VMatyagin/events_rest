@@ -1,3 +1,4 @@
+from django.db import models
 from rest_framework import serializers
 
 from core.models import Area, Boec, Brigade, Season, Shtab
@@ -21,24 +22,52 @@ class AreaSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
+class BrigadeShortSerializer(serializers.ModelSerializer):
+    """serializer with only id and title"""
+
+    class Meta:
+        model = Brigade
+        fields = ('id', 'title')
+        read_only_fields = ('id', )
+
+
 class SeasonSerializer(serializers.ModelSerializer):
     """serializer for season objects"""
+
+    brigade = BrigadeShortSerializer()
+
     class Meta:
         model = Season
         fields = ('id', 'boec', 'brigade', 'year')
         read_only_fields = ('id', )
 
 
+class BoecShortSerializer(serializers.ModelSerializer):
+    """serializer for boec objects"""
+    fullName = serializers.SerializerMethodField('get_full_name')
+
+    def get_full_name(self, obj):
+        return f"{obj.lastName} {obj.firstName} {obj.middleName}"
+
+    class Meta:
+        model = Boec
+        fields = ('id', 'fullName')
+        read_only_fields = ('id', 'fullName')
+
+
 class BoecSerializer(serializers.ModelSerializer):
     """serializer for boec objects"""
-
     seasons = SeasonSerializer(many=True, read_only=True)
+    fullName = serializers.SerializerMethodField('get_full_name')
+
+    def get_full_name(self, obj):
+        return f"{obj.lastName} {obj.firstName} {obj.middleName}"
 
     class Meta:
         model = Boec
         fields = ('id', 'firstName', 'lastName',
-                  'middleName', 'DOB', 'seasons')
-        read_only_fields = ('id',)
+                  'middleName', 'DOB', 'seasons', 'fullName')
+        read_only_fields = ('id', 'fullName', 'seasons')
 
 
 class BrigadeSerializer(serializers.ModelSerializer):
@@ -54,3 +83,6 @@ class BrigadeSerializer(serializers.ModelSerializer):
         model = Brigade
         fields = ('id', 'title', 'shtab', 'area', 'DOB', 'boec', 'boec_count')
         read_only_fields = ('id', 'boec_count',)
+
+
+SeasonSerializer.brigade = BrigadeSerializer(read_only=True)
