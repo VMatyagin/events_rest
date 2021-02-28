@@ -21,12 +21,23 @@ class AreaSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
+class SeasonSerializer(serializers.ModelSerializer):
+    """serializer for season objects"""
+    class Meta:
+        model = Season
+        fields = ('id', 'boec', 'brigade', 'year')
+        read_only_fields = ('id', )
+
+
 class BoecSerializer(serializers.ModelSerializer):
     """serializer for boec objects"""
 
+    seasons = SeasonSerializer(many=True, read_only=True)
+
     class Meta:
         model = Boec
-        fields = ('id', 'firstName', 'lastName', 'middleName', 'DOB')
+        fields = ('id', 'firstName', 'lastName',
+                  'middleName', 'DOB', 'seasons')
         read_only_fields = ('id',)
 
 
@@ -36,18 +47,10 @@ class BrigadeSerializer(serializers.ModelSerializer):
 
     def get_boec_count(self, obj):
         return obj.boec.count()
-        
+
     boec = BoecSerializer(many=True, read_only=True)
 
     class Meta:
         model = Brigade
         fields = ('id', 'title', 'shtab', 'area', 'DOB', 'boec', 'boec_count')
         read_only_fields = ('id', 'boec_count',)
-
-
-class SeasonSerializer(serializers.ModelSerializer):
-    """serializer for season objects"""
-    class Meta:
-        model = Season
-        fields = ('id', 'boec', 'brigade', 'year')
-        read_only_fields = ('id', )

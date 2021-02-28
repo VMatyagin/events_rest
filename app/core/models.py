@@ -139,9 +139,11 @@ class Event(models.Model):
 
 class Season(models.Model):
     """Season model"""
-    boec = models.ForeignKey(Boec, on_delete=models.RESTRICT)
-    brigade = models.ForeignKey(Brigade, on_delete=models.RESTRICT)
-    year = models.IntegerField()
+    boec = models.ForeignKey(
+        Boec, on_delete=models.RESTRICT, verbose_name='ФИО', related_name='seasons')
+    brigade = models.ForeignKey(
+        Brigade, on_delete=models.RESTRICT, verbose_name='Отряд')
+    year = models.IntegerField(verbose_name='Год выезда')
 
     def __str__(self):
         return f"{self.year} - {self.brigade.title} {self.boec.lastName}"
