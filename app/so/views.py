@@ -45,16 +45,25 @@ class BoecViewSet(viewsets.ModelViewSet):
         return serializers.BoecSerializer
 
     def get_queryset(self):
-        """Return ordered by lastName objects"""
-        return self.queryset.order_by('-lastName')
+        """Return ordered by id objects"""
+        queryset = self.queryset.order_by('-id')
+
+        brigadeId = self.request.query_params.get('brigadeId', None)
+        if brigadeId is not None:
+            queryset = queryset.filter(brigades=brigadeId)
+        return queryset
 
 
 class BrigadeViewSet(viewsets.ModelViewSet):
     """manage brigades in the database"""
-    serializer_class = serializers.BrigadeSerializer
     queryset = Brigade.objects.all()
     authentication_classes = (VKAuthentication,)
     permission_classes = (IsAuthenticated, )
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return serializers.BrigadeShortSerializer
+        return serializers.BrigadeSerializer
 
     def get_queryset(self):
         """Return ordered by title objects"""
