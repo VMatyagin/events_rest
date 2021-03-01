@@ -34,11 +34,12 @@ class BrigadeShortSerializer(serializers.ModelSerializer):
 class SeasonSerializer(serializers.ModelSerializer):
     """serializer for season objects"""
 
-    brigade = BrigadeShortSerializer()
+    brigade = BrigadeShortSerializer(read_only=True)
+    brigade_id = serializers.PrimaryKeyRelatedField(queryset=Brigade.objects.all(), source='brigade')
 
     class Meta:
         model = Season
-        fields = ('id', 'boec', 'brigade', 'year')
+        fields = ('id', 'boec', 'brigade', 'year', 'brigade_id')
         read_only_fields = ('id', )
 
 
@@ -83,6 +84,3 @@ class BrigadeSerializer(serializers.ModelSerializer):
         model = Brigade
         fields = ('id', 'title', 'shtab', 'area', 'DOB', 'boec', 'boec_count')
         read_only_fields = ('id', 'boec_count',)
-
-
-SeasonSerializer.brigade = BrigadeSerializer(read_only=True)

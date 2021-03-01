@@ -102,7 +102,7 @@ class Brigade(models.Model):
     title = models.CharField(max_length=255)
     area = models.ForeignKey(Area, on_delete=models.RESTRICT)
     shtab = models.ForeignKey(Shtab, on_delete=models.RESTRICT)
-    boec = models.ManyToManyField(Boec, blank=True)
+    boec = models.ManyToManyField(Boec, blank=True, related_name='brigades')
     DOB = models.DateField(null=True, blank=True)
     status = models.BooleanField(default=True)
     created_at = models.DateField(default=timezone.now)
