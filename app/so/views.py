@@ -79,4 +79,4 @@ class SeasonViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Return objects"""
-        return self.queryset
+        return self.queryset.order_by('-year')
