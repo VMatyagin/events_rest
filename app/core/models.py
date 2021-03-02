@@ -5,6 +5,7 @@ from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 from django.db import models
 from django.utils import timezone
+import reversion
 
 
 def recipe_image_file_path(instance, filename):
@@ -48,6 +49,7 @@ class UserManager(BaseUserManager):
         return user
 
 
+@reversion.register()
 class User(AbstractBaseUser, PermissionsMixin):
     """custom user model that support using id instead of username"""
     vk_id = models.CharField(max_length=255, unique=True)
@@ -63,6 +65,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'vk_id'
 
 
+@reversion.register()
 class Shtab(models.Model):
     """Shtab object"""
     title = models.CharField(max_length=255)
@@ -73,6 +76,7 @@ class Shtab(models.Model):
         return self.title
 
 
+@reversion.register()
 class Area(models.Model):
     """Area (direction) object"""
     title = models.CharField(max_length=255)
@@ -84,6 +88,7 @@ class Area(models.Model):
         return self.shortTitle
 
 
+@reversion.register()
 class Boec(models.Model):
     """Boec object"""
     firstName = models.CharField(max_length=255)
@@ -97,6 +102,7 @@ class Boec(models.Model):
         return f"{self.lastName} {self.firstName} {self.middleName}"
 
 
+@reversion.register()
 class Brigade(models.Model):
     """Brigade object"""
     title = models.CharField(max_length=255)
@@ -112,6 +118,7 @@ class Brigade(models.Model):
         return self.title
 
 
+@reversion.register()
 class Event(models.Model):
     """Event model"""
     class EventStatus(models.IntegerChoices):
@@ -137,6 +144,7 @@ class Event(models.Model):
         return self.title
 
 
+@reversion.register()
 class Season(models.Model):
     """Season model"""
     boec = models.ForeignKey(

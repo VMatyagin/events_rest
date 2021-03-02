@@ -9,6 +9,8 @@ from core import models
 from core.auth_backend import PasswordlessAuthBackend
 from django.utils.text import capfirst
 
+from reversion_compare.admin import CompareVersionAdmin
+
 import logging
 logger = logging.getLogger(__name__)
 authenticate = PasswordlessAuthBackend.authenticate
@@ -63,7 +65,7 @@ class LoginForm(AdminAuthenticationForm):
         return self.cleaned_data
 
 
-class UserAdmin(BaseUserAdmin):
+class UserAdmin(CompareVersionAdmin, BaseUserAdmin):
     ordering = ['id']
     list_display = ['vk_id', 'name']
     fieldsets = (
@@ -89,17 +91,37 @@ class UserAdmin(BaseUserAdmin):
     )
 
 
-class SeasonAdmin(admin.ModelAdmin):
+class SeasonAdmin(CompareVersionAdmin, admin.ModelAdmin):
     ordering = ['id']
     list_display = ['boec', 'brigade', 'year']
     search_fields = ('boec__lastName', 'boec__firstName')
     list_filter = ('brigade', 'year')
 
 
+class ShtabAdmin(CompareVersionAdmin, admin.ModelAdmin):
+    pass
+
+
+class AreaAdmin(CompareVersionAdmin, admin.ModelAdmin):
+    pass
+
+
+class BoecAdmin(CompareVersionAdmin, admin.ModelAdmin):
+    pass
+
+
+class BrigadeAdmin(CompareVersionAdmin, admin.ModelAdmin):
+    pass
+
+
+class EventAdmin(CompareVersionAdmin, admin.ModelAdmin):
+    pass
+
+
 admin.site.register(models.User, UserAdmin)
-admin.site.register(models.Shtab)
-admin.site.register(models.Area)
-admin.site.register(models.Boec)
-admin.site.register(models.Brigade)
-admin.site.register(models.Event)
+admin.site.register(models.Shtab, ShtabAdmin)
+admin.site.register(models.Area, AreaAdmin)
+admin.site.register(models.Boec, BoecAdmin)
+admin.site.register(models.Brigade, BrigadeAdmin)
+admin.site.register(models.Event, EventAdmin)
 admin.site.register(models.Season, SeasonAdmin)

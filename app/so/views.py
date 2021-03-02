@@ -3,11 +3,13 @@ from rest_framework.permissions import IsAuthenticated
 from core.authentication import VKAuthentication
 from rest_framework import filters
 
+from reversion.views import RevisionMixin
+
 from core.models import Boec, Brigade, Season, Shtab, Area
 from so import serializers
 
 
-class ShtabViewSet(viewsets.ModelViewSet):
+class ShtabViewSet(RevisionMixin, viewsets.ModelViewSet):
     """manage shtabs in the database"""
     serializer_class = serializers.ShtabSerializer
     queryset = Shtab.objects.all()
@@ -19,7 +21,7 @@ class ShtabViewSet(viewsets.ModelViewSet):
         return self.queryset.order_by('-title')
 
 
-class AreaViewSet(viewsets.ModelViewSet):
+class AreaViewSet(RevisionMixin, viewsets.ModelViewSet):
     """manage shtabs in the database"""
     serializer_class = serializers.AreaSerializer
     queryset = Area.objects.all()
@@ -31,7 +33,7 @@ class AreaViewSet(viewsets.ModelViewSet):
         return self.queryset.order_by('-shortTitle')
 
 
-class BoecViewSet(viewsets.ModelViewSet):
+class BoecViewSet(RevisionMixin, viewsets.ModelViewSet):
     """manage boecs in the database"""
     queryset = Boec.objects.all()
     authentication_classes = (VKAuthentication,)
@@ -54,7 +56,7 @@ class BoecViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class BrigadeViewSet(viewsets.ModelViewSet):
+class BrigadeViewSet(RevisionMixin, viewsets.ModelViewSet):
     """manage brigades in the database"""
     queryset = Brigade.objects.all()
     authentication_classes = (VKAuthentication,)
@@ -70,7 +72,7 @@ class BrigadeViewSet(viewsets.ModelViewSet):
         return self.queryset.order_by('-title')
 
 
-class SeasonViewSet(viewsets.ModelViewSet):
+class SeasonViewSet(RevisionMixin, viewsets.ModelViewSet):
     """manage seasons in the database"""
     serializer_class = serializers.SeasonSerializer
     queryset = Season.objects.all()
