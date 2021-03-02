@@ -95,7 +95,7 @@ class PrivateAreaApiTest(TestCase):
 
         payload = {
             'boec': boec.id,
-            'brigade': brigade.id,
+            'brigade_id': brigade.id,
             'year': 2020
         }
         self.client.post(SEASON_URL, payload)

@@ -1,8 +1,6 @@
 import json
 
 from django.core.management.base import BaseCommand
-from django.utils.translation import ugettext_lazy as _
-from django.utils.encoding import force_str
 
 from core.models import Boec, Brigade, Season
 
@@ -22,17 +20,20 @@ class Command(BaseCommand):
                 firstName = fio[1] if len(fio) > 1 else ''
 
                 boecList = Boec.objects.filter(
-                    firstName=firstName, lastName=lastName, middleName=middleName
+                    firstName=firstName, lastName=lastName,
+                    middleName=middleName
                 )
 
                 if (not boecList.exists()):
                     Boec.objects.create(
-                        firstName=firstName, lastName=lastName, middleName=middleName
+                        firstName=firstName, lastName=lastName,
+                        middleName=middleName
                     )
 
                 brigade = Brigade.objects.get(title=item['brigade'])
                 boec = Boec.objects.get(
-                    firstName=firstName, lastName=lastName, middleName=middleName
+                    firstName=firstName, lastName=lastName,
+                    middleName=middleName
                 )
 
                 if (not Season.objects.filter(

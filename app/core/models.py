@@ -140,7 +140,8 @@ class Event(models.Model):
 class Season(models.Model):
     """Season model"""
     boec = models.ForeignKey(
-        Boec, on_delete=models.RESTRICT, verbose_name='ФИО', related_name='seasons')
+        Boec, on_delete=models.RESTRICT, verbose_name='ФИО',
+        related_name='seasons')
     brigade = models.ForeignKey(
         Brigade, on_delete=models.RESTRICT, verbose_name='Отряд')
     year = models.IntegerField(verbose_name='Год выезда')

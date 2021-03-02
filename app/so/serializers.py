@@ -1,4 +1,3 @@
-from django.db import models
 from rest_framework import serializers
 
 from core.models import Area, Boec, Brigade, Season, Shtab
@@ -35,7 +34,9 @@ class SeasonSerializer(serializers.ModelSerializer):
     """serializer for season objects"""
 
     brigade = BrigadeShortSerializer(read_only=True)
-    brigade_id = serializers.PrimaryKeyRelatedField(queryset=Brigade.objects.all(), source='brigade')
+    brigade_id = serializers.PrimaryKeyRelatedField(
+        queryset=Brigade.objects.all(),
+        source='brigade')
 
     class Meta:
         model = Season

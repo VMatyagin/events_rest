@@ -7,7 +7,7 @@ from rest_framework.test import APIClient
 
 from core.models import Boec
 
-from so.serializers import BoecSerializer
+from so.serializers import BoecShortSerializer
 
 BOEC_URL = reverse('so:boec-list')
 
@@ -57,8 +57,8 @@ class PrivateBoecApiTest(TestCase):
 
         res = self.client.get(BOEC_URL)
 
-        list = Boec.objects.all().order_by('-lastName')
-        serializer = BoecSerializer(list, many=True)
+        list = Boec.objects.all().order_by('-id')
+        serializer = BoecShortSerializer(list, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data['items'], serializer.data)

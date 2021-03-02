@@ -7,7 +7,7 @@ from rest_framework.test import APIClient
 
 from core.models import Brigade, Shtab, Area
 
-from so.serializers import BrigadeSerializer
+from so.serializers import BrigadeShortSerializer
 
 BRIGADE_URL = reverse('so:brigade-list')
 
@@ -68,7 +68,7 @@ class PrivateBrigadeApiTest(TestCase):
         res = self.client.get(BRIGADE_URL)
 
         list = Brigade.objects.all().order_by('-title')
-        serializer = BrigadeSerializer(list, many=True)
+        serializer = BrigadeShortSerializer(list, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data['items'], serializer.data)
