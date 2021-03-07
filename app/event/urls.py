@@ -5,6 +5,7 @@ from event import views
 
 router = SimpleRouter()
 
+router.register('orders', views.EventOrdersViewSet)
 router.register('', views.EventViewSet)
 
 app_name = 'event'

@@ -7,6 +7,8 @@ from django.db import models
 from django.utils import timezone
 import reversion
 
+from django.utils.translation import ugettext_lazy as _
+
 
 def recipe_image_file_path(instance, filename):
     """Generate file path for new recipe image"""
@@ -68,6 +70,11 @@ class User(AbstractBaseUser, PermissionsMixin):
 @reversion.register()
 class Shtab(models.Model):
     """Shtab object"""
+
+    class Meta:
+        verbose_name = 'Штаб'
+        verbose_name_plural = 'Штабы'
+
     title = models.CharField(max_length=255)
     created_at = models.DateField(default=timezone.now)
     updated_at = AutoDateTimeField(default=timezone.now)
@@ -79,6 +86,11 @@ class Shtab(models.Model):
 @reversion.register()
 class Area(models.Model):
     """Area (direction) object"""
+
+    class Meta:
+        verbose_name = 'Направления'
+        verbose_name_plural = 'Направления'
+
     title = models.CharField(max_length=255)
     shortTitle = models.CharField(max_length=10)
     created_at = models.DateField(default=timezone.now)
@@ -91,6 +103,11 @@ class Area(models.Model):
 @reversion.register()
 class Boec(models.Model):
     """Boec object"""
+
+    class Meta:
+        verbose_name = 'Боец'
+        verbose_name_plural = 'Бойцы'
+
     firstName = models.CharField(max_length=255)
     lastName = models.CharField(max_length=255)
     middleName = models.CharField(max_length=255, blank=True)
@@ -105,6 +122,11 @@ class Boec(models.Model):
 @reversion.register()
 class Brigade(models.Model):
     """Brigade object"""
+
+    class Meta:
+        verbose_name = 'Отряд'
+        verbose_name_plural = 'Отряды'
+
     title = models.CharField(max_length=255)
     area = models.ForeignKey(Area, on_delete=models.RESTRICT)
     shtab = models.ForeignKey(Shtab, on_delete=models.RESTRICT)
@@ -121,24 +143,76 @@ class Brigade(models.Model):
 @reversion.register()
 class Event(models.Model):
     """Event model"""
+
+    class Meta:
+        verbose_name = 'Мероприятие'
+        verbose_name_plural = 'Мероприятия'
+
     class EventStatus(models.IntegerChoices):
-        JUST_CREATED = 0
-        PASSED = 1
-        NOT_PASSED = 2
+        JUST_CREATED = 0, _('Мероприятие создано')
+        PASSED = 1, _('Мероприятие прошло')
+        NOT_PASSED = 2,  _('Мероприятие не прошло')
+
+    class EventWorth(models.TextChoices):
+        UNSET = "0", _('Не учитывается')
+        ART = "1", _('Творчество')
+        SPORT = "2", _('Спорт')
+        VOLONTEER = "3", _('Волонтерство')
+        CITY = "4", _('Городское')
 
     status = models.IntegerField(
-        choices=EventStatus.choices, default=EventStatus.JUST_CREATED)
-    title = models.CharField(max_length=255)
-    description = models.CharField(max_length=255, blank=True)
-    location = models.CharField(max_length=255, blank=True)
-    shtab = models.ForeignKey(Shtab, on_delete=models.SET_NULL, null=True)
-    start = models.DateTimeField(null=True, blank=True)
-    end = models.DateTimeField(null=True, blank=True)
+        choices=EventStatus.choices, default=EventStatus.JUST_CREATED,
+        verbose_name='Статус мероприятия'
+    )
+    worth = models.CharField(
+        choices=EventWorth.choices, default=EventWorth.UNSET,
+        verbose_name='Ценность блоков',
+        max_length=5
+    )
+    title = models.CharField(
+        max_length=255,
+        verbose_name='Название'
+    )
+    description = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name='Описание'
+    )
+    location = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name='Место проведение'
+    )
+    shtab = models.ForeignKey(
+        Shtab,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name='Штаб'
+    )
+    startDate = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name='Дата начала'
+    )
+    startTime = models.TimeField(
+        null=True,
+        blank=True,
+        verbose_name='Время начала'
+    )
     organizer = models.ManyToManyField(
-        Boec, blank=True, related_name='organizers_list')
+        Boec, blank=True,
+        related_name='organizers_list',
+        verbose_name='Организаторы'
+    )
     volonteer = models.ManyToManyField(
-        Boec, blank=True, related_name='volonteers_list')
-    visibility = models.BooleanField(default=False)
+        Boec, blank=True,
+        related_name='volonteers_list',
+        verbose_name='Волонтеры'
+    )
+    visibility = models.BooleanField(
+        default=False,
+        verbose_name='Видимость'
+    )
 
     def __str__(self):
         return self.title
@@ -147,6 +221,11 @@ class Event(models.Model):
 @reversion.register()
 class Season(models.Model):
     """Season model"""
+
+    class Meta:
+        verbose_name = 'Выезжавший на сезон'
+        verbose_name_plural = 'Выезжавшие на сезон'
+
     boec = models.ForeignKey(
         Boec, on_delete=models.RESTRICT, verbose_name='ФИО',
         related_name='seasons')
@@ -156,3 +235,45 @@ class Season(models.Model):
 
     def __str__(self):
         return f"{self.year} - {self.brigade.title} {self.boec.lastName}"
+
+
+@reversion.register()
+class EventOrder(models.Model):
+    class Meta:
+        verbose_name = 'Заявка на мероприятие'
+        verbose_name_plural = 'Заявки на мероприятие'
+
+    class Place(models.TextChoices):
+        FIRST = "1", _('Первое место')
+        SECOND = "2", _('Второе место')
+        THIRD = "3", _('Третье место')
+
+    brigade = models.ForeignKey(Brigade, on_delete=models.RESTRICT)
+    participations = models.ManyToManyField(
+        Boec, blank=True, related_name='event_participations'
+    )
+    title = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name='Название'
+    )
+    event = models.ForeignKey(
+        Event, blank=True,
+        related_name='orders',
+        verbose_name='Мероприятие',
+        on_delete=models.RESTRICT
+    )
+    isСontender = models.BooleanField(
+        default=False,
+        verbose_name='Прошел в конкурсную программу (или плей-офф)'
+    )
+    place = models.CharField(
+        choices=Place.choices,
+        null=True,
+        blank=True,
+        verbose_name='Занятое место',
+        max_length=5
+    )
+
+    def __str__(self):
+        return f"{self.event} — {self.brigade}"

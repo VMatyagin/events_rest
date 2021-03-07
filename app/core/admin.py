@@ -118,6 +118,10 @@ class EventAdmin(CompareVersionAdmin, admin.ModelAdmin):
     pass
 
 
+class EventOrderAdmin(CompareVersionAdmin, admin.ModelAdmin):
+    pass
+
+
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Shtab, ShtabAdmin)
 admin.site.register(models.Area, AreaAdmin)
@@ -125,3 +129,4 @@ admin.site.register(models.Boec, BoecAdmin)
 admin.site.register(models.Brigade, BrigadeAdmin)
 admin.site.register(models.Event, EventAdmin)
 admin.site.register(models.Season, SeasonAdmin)
+admin.site.register(models.EventOrder, EventOrderAdmin)

@@ -41,7 +41,7 @@ class SeasonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Season
         fields = ('id', 'boec', 'brigade', 'year', 'brigade_id')
-        read_only_fields = ('id', )
+        read_only_fields = ('id', 'brigade')
 
 
 class BoecShortSerializer(serializers.ModelSerializer):
