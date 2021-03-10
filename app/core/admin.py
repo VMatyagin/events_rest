@@ -107,7 +107,7 @@ class AreaAdmin(CompareVersionAdmin, admin.ModelAdmin):
 
 
 class BoecAdmin(CompareVersionAdmin, admin.ModelAdmin):
-    pass
+    ordering = ['lastName']
 
 
 class BrigadeAdmin(CompareVersionAdmin, admin.ModelAdmin):

@@ -248,7 +248,9 @@ class EventOrder(models.Model):
         SECOND = "2", _('Второе место')
         THIRD = "3", _('Третье место')
 
-    brigade = models.ForeignKey(Brigade, on_delete=models.RESTRICT)
+    brigades = models.ManyToManyField(
+        Brigade, related_name='event_participations'
+    )
     participations = models.ManyToManyField(
         Boec, blank=True, related_name='event_participations'
     )
@@ -276,4 +278,7 @@ class EventOrder(models.Model):
     )
 
     def __str__(self):
-        return f"{self.event} — {self.brigade}"
+        name = f"- {self.title or 'Без названия'} - "
+        for brigade in self.brigades.all():
+            name += f"{brigade.title} "
+        return f"{self.event} {name}"

@@ -18,16 +18,13 @@ class EventSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     """serializer for the eventorders objects"""
 
-    brigade = BrigadeShortSerializer(read_only=True)
-    brigade_id = serializers.PrimaryKeyRelatedField(
-        queryset=Brigade.objects.all(),
-        source='brigade')
+    brigades = BrigadeShortSerializer(many=True)
 
-    participations = BoecShortSerializer(many=True, read_only=True)
+    participations = BoecShortSerializer(many=True)
 
     class Meta:
         model = EventOrder
-        fields = ('id', 'brigade', 'participations', 'event',
-                  'isСontender', 'place', 'brigade_id', 'title'
+        fields = ('id', 'brigades', 'participations', 'event',
+                  'isСontender', 'place', 'title'
                   )
-        read_only_fields = ('id', 'brigade')
+        read_only_fields = ('id', )
