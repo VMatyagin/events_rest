@@ -39,7 +39,7 @@ class BoecViewSet(RevisionMixin, viewsets.ModelViewSet):
     authentication_classes = (VKAuthentication,)
     permission_classes = (IsAuthenticated, )
     filter_backends = [filters.SearchFilter]
-    search_fields = ('lastName', )
+    search_fields = ('^lastName', )
 
     def get_serializer_class(self):
         if self.action == 'list':
