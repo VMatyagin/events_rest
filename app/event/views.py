@@ -44,32 +44,33 @@ class EventViewSet(RevisionMixin, viewsets.ModelViewSet):
         event = Event.objects.get(pk=pk)
         list = getattr(event, type)
         if request.method == 'POST':
-            """add user to type to event"""
-            try:
-                id = request.data['id']
-                boec = Boec.objects.get(id=id)
-                list.add(boec)
-            except (Boec.DoesNotExist, ValidationError):
-                raise status.HTTP_400_BAD_REQUEST
-        if request.method == 'DELETE':
-            """delete user from type of event"""
-            try:
-                id = request.data['id']
-                boec = Boec.objects.get(id=id)
-                list.remove(boec)
-            except (Boec.DoesNotExist, ValidationError):
-                raise status.HTTP_400_BAD_REQUEST
-
+            isRemove = self.request.query_params.get('isRemove')
+            if isRemove:
+                """delete user from type of event"""
+                try:
+                    id = request.data['id']
+                    boec = Boec.objects.get(id=id)
+                    list.remove(boec)
+                except (Boec.DoesNotExist, ValidationError):
+                    raise status.HTTP_400_BAD_REQUEST
+            else:
+                """add user to type to event"""
+                try:
+                    id = request.data['id']
+                    boec = Boec.objects.get(id=id)
+                    list.add(boec)
+                except (Boec.DoesNotExist, ValidationError):
+                    raise status.HTTP_400_BAD_REQUEST
         """get users list"""
         serializer = BoecShortSerializer(list, many=True)
         return Response(serializer.data)
 
-    @action(methods=['get', 'post', 'delete'], detail=True, permission_classes=(IsAuthenticated, ),
+    @action(methods=['get', 'post'], detail=True, permission_classes=(IsAuthenticated, ),
             url_path='volonteers', url_name='volonteers')
     def handle_volonteers(self, request, pk=None):
         return self.handleUsers(request=request, pk=pk, type='volonteer')
 
-    @action(methods=['get', 'post', 'delete'], detail=True, permission_classes=(IsAuthenticated, ),
+    @action(methods=['get', 'post'], detail=True, permission_classes=(IsAuthenticated, ),
             url_path='organizers', url_name='organizers')
     def handle_organizers(self, request, pk=None):
         return self.handleUsers(request=request, pk=pk, type='organizer')
