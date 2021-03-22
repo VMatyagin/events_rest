@@ -12,7 +12,7 @@ from rest_framework.authentication import (BaseAuthentication,
                                            get_authorization_header)
 
 # Защищённый ключ из настроек вашего приложения
-client_secret = "wvl68m4dR1UpLrVRli"
+client_secret = "yvvyGdRpObCuxrRuChYQ"
 
 
 def is_valid(query: dict, secret: str) -> bool:
@@ -70,9 +70,6 @@ class VKAuthentication(BaseAuthentication):
 
     def authenticate(self, request):
         auth = get_authorization_header(request).split()
-        # if not auth or auth[0].lower() != self.keyword.lower().encode():
-        #     return None
-
         if len(auth) != 1:
             msg = _('Invalid token header')
             raise exceptions.AuthenticationFailed(msg)
@@ -93,11 +90,8 @@ class VKAuthentication(BaseAuthentication):
         return self.authenticate_credentials(query_params)
 
     def authenticate_credentials(self, query_params):
-        if settings.DEBUG:
-            is_sign_validated = True
-        else:
-            is_sign_validated = is_valid(
-                query=query_params, secret=client_secret)
+        is_sign_validated = is_valid(
+            query=query_params, secret=client_secret)
         if (not is_sign_validated):
             raise exceptions.AuthenticationFailed(
                 _('Sign is not valid.'))
@@ -109,8 +103,9 @@ class VKAuthentication(BaseAuthentication):
                 raise exceptions.AuthenticationFailed(
                     _('User inactive or deleted.'))
         except get_user_model().DoesNotExist:
-            raise exceptions.AuthenticationFailed(
-                _("Invalid token or user doesn't exist."))
+            user = get_user_model().objects.create(
+                vk_id=query_params.get('vk_user_id')
+            )
 
         return (user, query_params.get('vk_user_id'))
 
