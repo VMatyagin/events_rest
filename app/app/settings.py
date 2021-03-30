@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'reversion',  # https://github.com/etianen/django-reversion
     'reversion_compare',  # https://github.com/jedie/django-reversion-compare
+    'rest_framework_swagger',
+    'drf_yasg',
     'core',
     'user',
     'so',
@@ -78,7 +80,8 @@ TEMPLATES = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'core.pagination.StyledPagination',
-    'PAGE_SIZE': 20
+    'PAGE_SIZE': 20,
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
 }
 
 WSGI_APPLICATION = 'app.wsgi.application'
