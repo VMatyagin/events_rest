@@ -1,4 +1,4 @@
-version: "3"
+version: "3.1"
 
 services:
     app:
@@ -17,10 +17,10 @@ services:
         expose:
             - "5432"
         environment:
-            - DB_HOST=db
-            - DB_NAME=app
-            - DB_USER=postgres
-            - DB_PASS=secretpassword
+            DB_HOST: db
+            DB_NAME: app
+            DB_USER: postgres
+            DB_PASS: secretpassword
         depends_on:
             - db
     db:
@@ -28,6 +28,12 @@ services:
         ports:
             - "5432:5432"
         environment:
-            - POSTGRES_DB=app
-            - POSTGRES_USER=postgres
-            - POSTGRES_PASSWORD=secretpassword
+            POSTGRES_DB: app
+            POSTGRES_PASSWORD: secretpassword
+    adminer:
+        image: adminer
+        restart: always
+        depends_on:
+          - db
+        ports:
+            - 8080:8080
