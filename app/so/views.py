@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from rest_framework import viewsets, mixins
+from rest_framework import generics, viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
 from core.authentication import VKAuthentication
 from rest_framework import filters
@@ -95,53 +95,6 @@ class BrigadeViewSet(RevisionMixin, viewsets.ModelViewSet):
         """Return ordered by title objects"""
         return self.queryset.order_by('title')
 
-    # @action(methods=['get', 'post', 'patch'], detail=True, permission_classes=(IsAuthenticated, ),
-    #         url_path='positions', url_name='positions',
-    #         authentication_classes=(VKAuthentication,))
-    # def getBrigadePositions(self, request, pk):
-    #     if request.method == 'POST':
-
-    #         if 'boec' not in request.data or 'position' not in request.data:
-    #             raise ValidationError(
-    #                 {'error': 'position and boec should have a value.'})
-    #         boec = {}
-    #         brigade = {}
-
-        # try:
-        #     boecId = request.data['boec']
-        #     boec = Boec.objects.get(id=boecId)
-        # except (Boec.DoesNotExist, ValidationError):
-        #     raise status.HTTP_400_BAD_REQUEST
-        # try:
-        #     brigade = Brigade.objects.get(id=pk)
-        # except (Brigade.DoesNotExist, ValidationError):
-        #     raise status.HTTP_400_BAD_REQUEST
-
-    #         position = Position.objects.create(
-    #             position=request.data['position'],
-    #             boec=boec,
-    #             brigade=brigade
-    #         )
-    #         serializer = serializers.PositionSerializer(
-    #             position)
-    #         return Response(serializer.data)
-    #     else:
-    #         positions = Position.objects.filter(
-    #             brigade=pk).order_by('position')
-    #         serializer = serializers.PositionSerializer(
-    #             positions, many=True)
-    #         return Response(serializer.data)
-
-    @action(methods=['get'], detail=True,
-            permission_classes=(IsAuthenticated, ),
-            authentication_classes=(VKAuthentication,),
-            url_path='seasons', url_name='seasons')
-    def handleBrigadeSeasons(self, request, pk):
-        seasons = Season.objects.filter(brigade=pk).order_by('boec__lastName')
-        serializer = serializers.SeasonSerializer(
-            seasons, many=True, fields=('id', 'year', 'brigade', 'boec'))
-        return Response(serializer.data)
-
 
 logger = logging.getLogger(__name__)
 
@@ -183,6 +136,15 @@ class BrigadePositions(RevisionMixin, CreateListRetrieveViewSet):
 
         return Response(serializer.data)
 
+
+class BrigadeSeasons(RevisionMixin, viewsets.ReadOnlyModelViewSet):
+    serializer_class = serializers.SeasonSerializer
+    authentication_classes = (VKAuthentication,)
+    permission_classes = (IsAuthenticated, )
+    pagination_class = None
+
+    def get_queryset(self):
+        return Season.objects.filter(brigade=self.kwargs['brigade_pk']).order_by('boec__lastName')
 
 class SeasonViewSet(RevisionMixin, viewsets.ModelViewSet):
     """manage seasons in the database"""

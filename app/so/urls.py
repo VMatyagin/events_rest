@@ -14,6 +14,9 @@ brigade_router = routers.NestedSimpleRouter(
     router, r'brigade', lookup='brigade')
 brigade_router.register(r'positions', views.BrigadePositions,
                         basename='brigade-positions')
+brigade_router.register(r'seasons', views.BrigadeSeasons,
+                        basename='brigade-seasons')
+
 
 router.register('season', views.SeasonViewSet)
 
