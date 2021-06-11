@@ -5,6 +5,7 @@ from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 from django.db import models
 from django.utils import timezone
+from rest_framework.exceptions import ValidationError
 import reversion
 
 from django.utils.translation import ugettext_lazy as _
@@ -25,11 +26,11 @@ class AutoDateTimeField(models.DateTimeField):
 
 class UserManager(BaseUserManager):
 
-    def create_user(self, vk_id, password=None, **extra_fields):
+    def create_user(self, vkId, password=None, **extra_fields):
         """creates and saves a new user"""
-        if not vk_id:
-            raise ValueError('Users must have an vk_id')
-        user = self.model(vk_id=vk_id, **extra_fields)
+        if not vkId:
+            raise ValueError('Users must have an vkId')
+        user = self.model(vkId=vkId, **extra_fields)
         if password:
             user.set_password(password)
         else:
@@ -38,11 +39,11 @@ class UserManager(BaseUserManager):
 
         return user
 
-    def create_superuser(self, vk_id, password=None):
+    def create_superuser(self, vkId, password=None):
         """creates and save a new super user"""
         if not password:
             raise ValueError('SuperUsers must have password')
-        user = self.create_user(vk_id=vk_id, password=password)
+        user = self.create_user(vkId=vkId, password=password)
         user.is_staff = True
         user.is_superuser = True
 
@@ -54,7 +55,8 @@ class UserManager(BaseUserManager):
 @reversion.register()
 class User(AbstractBaseUser, PermissionsMixin):
     """custom user model that support using id instead of username"""
-    vk_id = models.CharField(max_length=255, unique=True)
+    vkId = models.IntegerField(unique=True)
+
     name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -64,7 +66,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'vk_id'
+    USERNAME_FIELD = 'vkId'
+
+    def __str__(self):
+        return f"{self.vkId}"
 
 
 @reversion.register()
@@ -96,6 +101,10 @@ class Area(models.Model):
     created_at = models.DateField(default=timezone.now)
     updated_at = AutoDateTimeField(default=timezone.now)
 
+    @property
+    def brigades_count(self):
+        return self.brigades.count()
+
     def __str__(self):
         return self.shortTitle
 
@@ -114,6 +123,7 @@ class Boec(models.Model):
     DOB = models.DateField(null=True, blank=True)
     created_at = models.DateField(default=timezone.now)
     updated_at = AutoDateTimeField(default=timezone.now)
+    vkId = models.IntegerField(verbose_name='VK id', blank=True, null=True, unique=True)
 
     def __str__(self):
         return f"{self.lastName} {self.firstName} {self.middleName}"
@@ -128,10 +138,11 @@ class Brigade(models.Model):
         verbose_name_plural = 'Отряды'
 
     title = models.CharField(max_length=255)
-    area = models.ForeignKey(Area, on_delete=models.RESTRICT)
+    area = models.ForeignKey(
+        Area, on_delete=models.RESTRICT, related_name='brigades')
     shtab = models.ForeignKey(Shtab, on_delete=models.RESTRICT)
     boec = models.ManyToManyField(Boec, blank=True, related_name='brigades')
-    DOB = models.DateField(null=True, blank=True)
+    DOB = models.DateTimeField(null=True, blank=True)
     status = models.BooleanField(default=True)
     created_at = models.DateField(default=timezone.now)
     updated_at = AutoDateTimeField(default=timezone.now)
@@ -227,10 +238,10 @@ class Season(models.Model):
         verbose_name_plural = 'Выезжавшие на сезон'
 
     boec = models.ForeignKey(
-        Boec, on_delete=models.RESTRICT, verbose_name='ФИО',
+        Boec, on_delete=models.CASCADE, verbose_name='ФИО',
         related_name='seasons')
     brigade = models.ForeignKey(
-        Brigade, on_delete=models.RESTRICT, verbose_name='Отряд')
+        Brigade, on_delete=models.RESTRICT, verbose_name='Отряд', related_name='seasons')
     year = models.IntegerField(verbose_name='Год выезда')
 
     def __str__(self):
@@ -282,3 +293,60 @@ class EventOrder(models.Model):
         for brigade in self.brigades.all():
             name += f"{brigade.title} "
         return f"{self.event} {name}"
+
+
+@reversion.register()
+class Position(models.Model):
+    """Position model"""
+
+    class Meta:
+        verbose_name = 'Должность'
+        verbose_name_plural = 'Должности'
+
+    class PositionEnum(models.IntegerChoices):
+        WORKER = 0, _('Работник')
+        KOMENDANT = 1, _('Комендант')
+        METODIST = 2, _('Методист')
+        MASTER = 3, _('Мастер')
+        KOMISSAR = 4, _('Комиссар')
+        KOMANDIR = 5,  _('Командир')
+
+    position = models.IntegerField(
+        choices=PositionEnum.choices,
+        verbose_name='Должность'
+    )
+
+    boec = models.ForeignKey(
+        Boec,
+        on_delete=models.RESTRICT,
+        verbose_name='Боец',
+        related_name='positions',
+    )
+
+    brigade = models.ForeignKey(
+        Brigade,
+        on_delete=models.RESTRICT,
+        verbose_name='Отряд',
+        related_name='positions',
+        null=True,
+        blank=True
+    )
+    shtab = models.ForeignKey(
+        Shtab,
+        on_delete=models.RESTRICT,
+        verbose_name='Штаб',
+        related_name='positions',
+        null=True,
+        blank=True
+    )
+    fromDate = models.DateTimeField(default=timezone.now)
+    toDate = models.DateTimeField(null=True, blank=True)
+
+    def validate(self, data):
+        if not data['brigade'] and not data['shtab']:
+            raise ValidationError(
+                {'error': 'Even one of brigade or shtab should have a value.'})
+
+    def __str__(self):
+        additionalMsg = _('Действующий') if (not self.toDate) else ""
+        return f"{self.get_position_display()} | {self.brigade.title} | {self.boec} | {additionalMsg}"

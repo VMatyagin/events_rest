@@ -11,7 +11,7 @@ from event import serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from so.serializers import BoecShortSerializer
+from so.serializers import BoecInfoSerializer
 
 
 class EventViewSet(RevisionMixin, viewsets.ModelViewSet):
@@ -62,7 +62,7 @@ class EventViewSet(RevisionMixin, viewsets.ModelViewSet):
                 except (Boec.DoesNotExist, ValidationError):
                     raise status.HTTP_400_BAD_REQUEST
         """get users list"""
-        serializer = BoecShortSerializer(list, many=True)
+        serializer = BoecInfoSerializer(list, many=True)
         return Response(serializer.data)
 
     @action(methods=['get', 'post'], detail=True, permission_classes=(IsAuthenticated, ),

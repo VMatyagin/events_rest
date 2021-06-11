@@ -10,10 +10,11 @@ from core.auth_backend import PasswordlessAuthBackend
 from django.utils.text import capfirst
 
 from reversion_compare.admin import CompareVersionAdmin
-
+from django_admin_listfilter_dropdown.filters import RelatedDropdownFilter
 import logging
-logger = logging.getLogger(__name__)
+
 authenticate = PasswordlessAuthBackend.authenticate
+logger = logging.getLogger(__name__)
 
 
 class LoginForm(AdminAuthenticationForm):
@@ -43,21 +44,15 @@ class LoginForm(AdminAuthenticationForm):
         # Set the max length and label for the "username" field.
         self.username_field = get_user_model()._meta.get_field(
             get_user_model().USERNAME_FIELD)
-        self.fields['username'].max_length = (
-            self.username_field.max_length or 25
-        )
-        if self.fields['username'].label is None:
-            self.fields['username'].label = capfirst(
-                self.username_field.verbose_name)
 
     def clean(self):
         username = self.cleaned_data.get('username')
 
         if username is not None:
             self.user_cache = authenticate(
-                self.request, vk_id=username)
+                self.request, vkId=username)
+            logger.error(self.user_cache is None)
             if self.user_cache is None:
-
                 raise self.get_invalid_login_error()
             else:
                 self.confirm_login_allowed(self.user_cache)
@@ -67,9 +62,9 @@ class LoginForm(AdminAuthenticationForm):
 
 class UserAdmin(CompareVersionAdmin, BaseUserAdmin):
     ordering = ['id']
-    list_display = ['vk_id', 'name']
+    list_display = ['vkId', 'name']
     fieldsets = (
-        (None, {'fields': ('vk_id',)}),
+        (None, {'fields': ('vkId',)}),
         (_('Personal Info'), {'fields': ('name',)}),
         (
             _('Permissions'),
@@ -86,7 +81,7 @@ class UserAdmin(CompareVersionAdmin, BaseUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('vk_id',)
+            'fields': ('vkId',)
         }),
     )
 
@@ -108,6 +103,7 @@ class AreaAdmin(CompareVersionAdmin, admin.ModelAdmin):
 
 class BoecAdmin(CompareVersionAdmin, admin.ModelAdmin):
     ordering = ['lastName']
+    search_fields = ('lastName', 'firstName')
 
 
 class BrigadeAdmin(CompareVersionAdmin, admin.ModelAdmin):
@@ -122,6 +118,29 @@ class EventOrderAdmin(CompareVersionAdmin, admin.ModelAdmin):
     pass
 
 
+class ActivePositionFilter(admin.SimpleListFilter):
+    title = _("Действующий")
+    parameter_name = 'toDate'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('0', _('Действующий')),
+            ('1', _('Не действующий')),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == '0':
+            return queryset.filter(toDate__isnull=True)
+        if self.value() == '1':
+            return queryset.filter(toDate__isnull=False)
+
+
+class PositionAdmin(CompareVersionAdmin, admin.ModelAdmin):
+    list_display = ['position', 'brigade', 'boec']
+    list_filter = ('position', ActivePositionFilter,
+                   ('brigade', RelatedDropdownFilter))
+
+
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Shtab, ShtabAdmin)
 admin.site.register(models.Area, AreaAdmin)
@@ -130,3 +149,4 @@ admin.site.register(models.Brigade, BrigadeAdmin)
 admin.site.register(models.Event, EventAdmin)
 admin.site.register(models.Season, SeasonAdmin)
 admin.site.register(models.EventOrder, EventOrderAdmin)
+admin.site.register(models.Position, PositionAdmin)

@@ -18,7 +18,7 @@ services:
             - "5432"
         environment:
             DB_HOST: db
-            DB_NAME: app
+            DB_NAME: so
             DB_USER: postgres
             DB_PASS: secretpassword
         depends_on:
@@ -34,6 +34,15 @@ services:
         image: adminer
         restart: always
         depends_on:
-          - db
+            - db
         ports:
             - 8080:8080
+    pgadmin:
+        image: dpage/pgadmin4
+        depends_on:
+            - db
+        environment:
+            PGADMIN_DEFAULT_EMAIL: admin@admin.com
+            PGADMIN_DEFAULT_PASSWORD: pwdpwd
+        ports:
+            - "5050:80"

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from core.models import Brigade, Event, EventOrder
-from so.serializers import BoecShortSerializer, BrigadeShortSerializer
+from so.serializers import BoecInfoSerializer, BrigadeShortSerializer
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -20,7 +20,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     brigades = BrigadeShortSerializer(many=True)
 
-    participations = BoecShortSerializer(many=True)
+    participations = BoecInfoSerializer(many=True)
 
     class Meta:
         model = EventOrder

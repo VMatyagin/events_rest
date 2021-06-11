@@ -3,13 +3,42 @@ from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
+from core.models import Position
+
 
 class UserSerializer(serializers.ModelSerializer):
     """serializer for the users object"""
 
+    brigades = serializers.SerializerMethodField('get_editable_brigades')
+
+    def get_editable_brigades(self, obj):
+        positions = Position.objects.filter(
+            toDate__isnull=True, shtab__isnull=True, boec__vkId=obj.vkId
+        ).values_list(
+            'id', flat=True
+        ).distinct()
+
+        return positions
+
+    # def get_past_seasons(self, obj):
+    #     value_list = obj.seasons.values_list(
+    #         'year', flat=True
+    #     ).distinct()
+    #     group_by_value = {}
+    #     for value in value_list:
+    #         list = obj.seasons.filter(
+    #             year=value
+    #         ).only('boec')
+    #         serializer = SeasonSerializer(
+    #             list, many=True, fields=('boec', 'id'))
+
+    #         group_by_value[value] = serializer.data
+
+    #     return group_by_value
+
     class Meta:
         model = get_user_model()
-        fields = ('id', 'vk_id', 'name')
+        fields = ('id', 'brigades')
         # extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}
 
     def create(self, validated_data):
@@ -30,7 +59,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class AuthTokenSerializer(serializers.Serializer):
     """serializer for the user authentication object"""
-    vk_id = serializers.CharField()
+    vkId = serializers.IntegerField()
     # password = serializers.CharField(
     #     style={'input_type': 'password'},
     #     trim_whitespace=False
@@ -38,12 +67,12 @@ class AuthTokenSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         """validate and authenticate the user"""
-        vk_id = attrs.get('vk_id')
+        vkId = attrs.get('vkId')
         # password = attrs.get('password')
 
         user = PasswordlessAuthBackend.authenticate(
             request=self.context.get('request'),
-            vk_id=vk_id,
+            vkId=vkId,
             # password=password
         )
         if not user:

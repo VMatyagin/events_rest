@@ -22,7 +22,7 @@ class PublicUserApiTests(TestCase):
     def test_create_valid_user_success(self):
         """test creating user with valid payload is successful"""
         payload = {
-            'vk_id': 'test',
+            'vkId': 'test',
             'name': 'test name'
         }
         res = self.client.post(CREATE_USER_URL, payload)
@@ -34,7 +34,7 @@ class PublicUserApiTests(TestCase):
     def test_user_exists(self):
         """test creating user that already exists"""
         payload = {
-            'vk_id': 'test',
+            'vkId': 'test',
         }
         create_user(**payload)
 
@@ -54,7 +54,7 @@ class PrivateUserApiTest(TestCase):
 
     def setUp(self):
         self.user = create_user(
-            vk_id="test",
+            vkId="test",
             name='name'
         )
         self.client = APIClient()
@@ -67,7 +67,7 @@ class PrivateUserApiTest(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, {
             'id': self.user.id,
-            'vk_id': self.user.vk_id,
+            'vkId': self.user.vkId,
             'name': self.user.name
         })
 

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'reversion_compare',  # https://github.com/jedie/django-reversion-compare
     'rest_framework_swagger',
     'drf_yasg',
+    'django_admin_listfilter_dropdown',
     'core',
     'user',
     'so',
@@ -81,7 +82,9 @@ TEMPLATES = [
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'core.pagination.StyledPagination',
     'PAGE_SIZE': 20,
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    'DATETIME_FORMAT': "%Y-%m-%dT%H:%M:%S.%fZ",
+
 }
 
 WSGI_APPLICATION = 'app.wsgi.application'

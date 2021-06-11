@@ -10,6 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import exceptions
 from rest_framework.authentication import (BaseAuthentication,
                                            get_authorization_header)
+from rest_framework.permissions import BasePermission
 
 # Защищённый ключ из настроек вашего приложения
 client_secret = "yvvyGdRpObCuxrRuChYQ"
@@ -96,14 +97,14 @@ class VKAuthentication(BaseAuthentication):
                 _('Sign is not valid.'))
         try:
             user = get_user_model().objects.get(
-                vk_id=query_params.get('vk_user_id')
+                vkId=query_params.get('vk_user_id')
             )
             if not user.is_active:
                 raise exceptions.AuthenticationFailed(
                     _('User inactive or deleted.'))
         except get_user_model().DoesNotExist:
             user = get_user_model().objects.create(
-                vk_id=query_params.get('vk_user_id')
+                vkId=query_params.get('vk_user_id')
             )
 
         return (user, query_params.get('vk_user_id'))

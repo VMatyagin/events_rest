@@ -3,21 +3,21 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 
-def sample_user(vk_id='test'):
+def sample_user(vkId='test'):
     """create a sample user"""
-    return get_user_model().objects.create_user(vk_id=vk_id)
+    return get_user_model().objects.create_user(vkId=vkId)
 
 
 class ModelTests(TestCase):
 
-    def test_create_user_witht_vk_id_sussessfull(self):
-        """Test creating a new user with an vk_id is successfulll"""
-        vk_id = 'test'
+    def test_create_user_witht_vkId_sussessfull(self):
+        """Test creating a new user with an vkId is successfulll"""
+        vkId = 'test'
         user = get_user_model().objects.create_user(
-            vk_id=vk_id,
+            vkId=vkId,
         )
 
-        self.assertEqual(user.vk_id, vk_id)
+        self.assertEqual(user.vkId, vkId)
         self.assertTrue(not user.has_usable_password())
 
     def test_new_user_invalid_email(self):
