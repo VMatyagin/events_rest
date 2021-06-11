@@ -69,15 +69,35 @@ class BoecViewSet(RevisionMixin, viewsets.ModelViewSet):
             queryset = queryset.filter(brigades=brigadeId)
         return queryset
 
-    @action(methods=['get'], detail=True, permission_classes=(IsAuthenticated, ),
-            url_path='seasons', url_name='seasons',
-            authentication_classes=(VKAuthentication,))
-    def handleBoecSeasons(self, request, pk):
-        seasons = Season.objects.filter(boec=pk)
-        """get users list"""
-        serializer = serializers.SeasonSerializer(
-            seasons, many=True, fields=('id', 'year', 'brigade'))
-        return Response(serializer.data)
+    # @action(methods=['get'], detail=True, permission_classes=(IsAuthenticated, ),
+    #         url_path='seasons', url_name='seasons',
+    #         authentication_classes=(VKAuthentication,))
+    # def handleBoecSeasons(self, request, pk):
+    #     seasons = Season.objects.filter(boec=pk)
+    #     """get users list"""
+    #     serializer = serializers.SeasonSerializer(
+    #         seasons, many=True, fields=('id', 'year', 'brigade'))
+    #     return Response(serializer.data)
+
+
+class BoecPositions(RevisionMixin, viewsets.ReadOnlyModelViewSet):
+    serializer_class = serializers.PositionSerializer
+    authentication_classes = (VKAuthentication,)
+    permission_classes = (IsAuthenticated, )
+    pagination_class = None
+
+    def get_queryset(self):
+        return Position.objects.filter(boec=self.kwargs['boec_pk'])
+
+
+class BoecSeasons(RevisionMixin, viewsets.ReadOnlyModelViewSet):
+    serializer_class = serializers.SeasonSerializer
+    authentication_classes = (VKAuthentication,)
+    permission_classes = (IsAuthenticated, )
+    pagination_class = None
+
+    def get_queryset(self):
+        return Season.objects.filter(boec=self.kwargs['boec_pk'])
 
 
 class BrigadeViewSet(RevisionMixin, viewsets.ModelViewSet):
@@ -145,6 +165,7 @@ class BrigadeSeasons(RevisionMixin, viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return Season.objects.filter(brigade=self.kwargs['brigade_pk']).order_by('boec__lastName')
+
 
 class SeasonViewSet(RevisionMixin, viewsets.ModelViewSet):
     """manage seasons in the database"""

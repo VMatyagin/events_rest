@@ -137,6 +137,7 @@ class PositionSerializer(serializers.ModelSerializer):
     """ serializer for the position objects """
 
     boec = BoecInfoSerializer(required=False)
+    brigade = BrigadeShortSerializer(required=False)
     boecId = serializers.PrimaryKeyRelatedField(
         queryset=Boec.objects.all(),
         source='boec'
