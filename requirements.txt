@@ -9,5 +9,6 @@ django-reversion-compare>=0.14.0,<1.0.0
 drf-yasg==1.20.0
 drf-nested-routers==0.93.3
 django-admin-list-filter-dropdown==1.0.3
-
+pygsheets==2.0.5
+numpy==1.20.3
 flake8>=3.8.4,<3.9.0
