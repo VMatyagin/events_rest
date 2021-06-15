@@ -5,14 +5,12 @@ import datetime
 
 from django.core.management.base import BaseCommand
 
-from core.models import Boec, Brigade, Season
-
-
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
         client = pygsheets.authorize()
 
-        sht = client.open_by_key('1s_NVTmYxG5GloDaOOw4d7eh7P_zAcobTmIRseYHsg3g')
+        sht = client.open_by_key(
+            '1s_NVTmYxG5GloDaOOw4d7eh7P_zAcobTmIRseYHsg3g')
         sht.add_worksheet(f"{datetime.date.today()}")

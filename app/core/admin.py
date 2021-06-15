@@ -114,10 +114,6 @@ class EventAdmin(CompareVersionAdmin, admin.ModelAdmin):
     pass
 
 
-class EventOrderAdmin(CompareVersionAdmin, admin.ModelAdmin):
-    pass
-
-
 class ActivePositionFilter(admin.SimpleListFilter):
     title = _("Действующий")
     parameter_name = 'toDate'
@@ -139,6 +135,8 @@ class PositionAdmin(CompareVersionAdmin, admin.ModelAdmin):
     list_display = ['position', 'brigade', 'boec']
     list_filter = ('position', ActivePositionFilter,
                    ('brigade', RelatedDropdownFilter))
+class ParticipantAdmin(CompareVersionAdmin, admin.ModelAdmin):
+    pass
 
 
 admin.site.register(models.User, UserAdmin)
@@ -148,5 +146,5 @@ admin.site.register(models.Boec, BoecAdmin)
 admin.site.register(models.Brigade, BrigadeAdmin)
 admin.site.register(models.Event, EventAdmin)
 admin.site.register(models.Season, SeasonAdmin)
-admin.site.register(models.EventOrder, EventOrderAdmin)
 admin.site.register(models.Position, PositionAdmin)
+admin.site.register(models.Participant, ParticipantAdmin)

@@ -123,7 +123,8 @@ class Boec(models.Model):
     DOB = models.DateField(null=True, blank=True)
     created_at = models.DateField(default=timezone.now)
     updated_at = AutoDateTimeField(default=timezone.now)
-    vkId = models.IntegerField(verbose_name='VK id', blank=True, null=True, unique=True)
+    vkId = models.IntegerField(
+        verbose_name='VK id', blank=True, null=True, unique=True)
 
     def __str__(self):
         return f"{self.lastName} {self.firstName} {self.middleName}"
@@ -164,21 +165,20 @@ class Event(models.Model):
         PASSED = 1, _('Мероприятие прошло')
         NOT_PASSED = 2,  _('Мероприятие не прошло')
 
-    class EventWorth(models.TextChoices):
-        UNSET = "0", _('Не учитывается')
-        ART = "1", _('Творчество')
-        SPORT = "2", _('Спорт')
-        VOLONTEER = "3", _('Волонтерство')
-        CITY = "4", _('Городское')
+    class EventWorth(models.IntegerChoices):
+        UNSET = 0, _('Не учитывается')
+        ART = 1, _('Творчество')
+        SPORT = 2, _('Спорт')
+        VOLONTEER = 3, _('Волонтерство')
+        CITY = 4, _('Городское')
 
     status = models.IntegerField(
         choices=EventStatus.choices, default=EventStatus.JUST_CREATED,
         verbose_name='Статус мероприятия'
     )
-    worth = models.CharField(
+    worth = models.IntegerField(
         choices=EventWorth.choices, default=EventWorth.UNSET,
         verbose_name='Ценность блоков',
-        max_length=5
     )
     title = models.CharField(
         max_length=255,
@@ -187,11 +187,13 @@ class Event(models.Model):
     description = models.CharField(
         max_length=255,
         blank=True,
+        null=True,
         verbose_name='Описание'
     )
     location = models.CharField(
         max_length=255,
         blank=True,
+        null=True,
         verbose_name='Место проведение'
     )
     shtab = models.ForeignKey(
@@ -200,9 +202,7 @@ class Event(models.Model):
         null=True,
         verbose_name='Штаб'
     )
-    startDate = models.DateField(
-        null=True,
-        blank=True,
+    startDate = models.DateTimeField(
         verbose_name='Дата начала'
     )
     startTime = models.TimeField(
@@ -210,16 +210,7 @@ class Event(models.Model):
         blank=True,
         verbose_name='Время начала'
     )
-    organizer = models.ManyToManyField(
-        Boec, blank=True,
-        related_name='organizers_list',
-        verbose_name='Организаторы'
-    )
-    volonteer = models.ManyToManyField(
-        Boec, blank=True,
-        related_name='volonteers_list',
-        verbose_name='Волонтеры'
-    )
+
     visibility = models.BooleanField(
         default=False,
         verbose_name='Видимость'
@@ -246,53 +237,6 @@ class Season(models.Model):
 
     def __str__(self):
         return f"{self.year} - {self.brigade.title} {self.boec.lastName}"
-
-
-@reversion.register()
-class EventOrder(models.Model):
-    class Meta:
-        verbose_name = 'Заявка на мероприятие'
-        verbose_name_plural = 'Заявки на мероприятие'
-
-    class Place(models.TextChoices):
-        FIRST = "1", _('Первое место')
-        SECOND = "2", _('Второе место')
-        THIRD = "3", _('Третье место')
-
-    brigades = models.ManyToManyField(
-        Brigade, related_name='event_participations'
-    )
-    participations = models.ManyToManyField(
-        Boec, blank=True, related_name='event_participations'
-    )
-    title = models.CharField(
-        max_length=255,
-        blank=True,
-        verbose_name='Название'
-    )
-    event = models.ForeignKey(
-        Event, blank=True,
-        related_name='orders',
-        verbose_name='Мероприятие',
-        on_delete=models.RESTRICT
-    )
-    isСontender = models.BooleanField(
-        default=False,
-        verbose_name='Прошел в конкурсную программу (или плей-офф)'
-    )
-    place = models.CharField(
-        choices=Place.choices,
-        null=True,
-        blank=True,
-        verbose_name='Занятое место',
-        max_length=5
-    )
-
-    def __str__(self):
-        name = f"- {self.title or 'Без названия'} - "
-        for brigade in self.brigades.all():
-            name += f"{brigade.title} "
-        return f"{self.event} {name}"
 
 
 @reversion.register()
@@ -350,3 +294,36 @@ class Position(models.Model):
     def __str__(self):
         additionalMsg = _('Действующий') if (not self.toDate) else ""
         return f"{self.get_position_display()} | {self.brigade.title} | {self.boec} | {additionalMsg}"
+
+
+@reversion.register()
+class Participant(models.Model):
+    """Participant model"""
+
+    class Meta:
+        verbose_name = 'Участник мероприятия'
+        verbose_name_plural = 'Участники мероприятия'
+
+    boec = models.ForeignKey(
+        Boec, on_delete=models.RESTRICT, verbose_name='Участник',
+        related_name='participation'
+    )
+
+    event = models.ForeignKey(
+        Event, on_delete=models.RESTRICT, verbose_name='Мероприятие',
+        related_name='participant'
+    )
+
+    class WorthEnum(models.IntegerChoices):
+        VOLONTEER = 0, _('Волонтер')
+        ORGANIZER = 1, _('Организатор')
+        DEFAULT = 3, _('Участник')
+
+    worth = models.IntegerField(
+        choices=WorthEnum.choices,
+        verbose_name='Статус участия',
+        default=WorthEnum.DEFAULT
+    )
+
+    def __str__(self):
+        return f"{self.boec.lastName} | {self.worth} | {self.event.title}"

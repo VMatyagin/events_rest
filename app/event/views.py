@@ -1,23 +1,33 @@
 from django.core.exceptions import ValidationError
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
 from core.authentication import VKAuthentication
-from rest_framework import filters, status
+from rest_framework import filters
 
 from reversion.views import RevisionMixin
 
-from core.models import Boec, Brigade, Event, EventOrder
+from core import models
+from core.utils.sheets import EventReportGenerator
 from event import serializers
+from django.utils.translation import ugettext_lazy as _
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from so.serializers import BoecInfoSerializer
+
+class CreateListAndDestroyViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin,
+                                  mixins.ListModelMixin,
+                                  viewsets.GenericViewSet):
+    pass
 
 
-class EventViewSet(RevisionMixin, viewsets.ModelViewSet):
+class EventViewSet(RevisionMixin, mixins.CreateModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.UpdateModelMixin,
+                   mixins.ListModelMixin,
+                   viewsets.GenericViewSet):
     """manage events in the database"""
     serializer_class = serializers.EventSerializer
-    queryset = Event.objects.all()
+    queryset = models.Event.objects.all()
     authentication_classes = (VKAuthentication,)
     permission_classes = (IsAuthenticated, )
 
@@ -28,109 +38,57 @@ class EventViewSet(RevisionMixin, viewsets.ModelViewSet):
         """Return ordered by title objects"""
         return self.queryset.order_by('-startDate')
 
-    @action(methods=['get'], detail=True, permission_classes=(IsAuthenticated, ),
-            url_path='toggle', url_name='toggle_visibility')
-    def toggle_visibility(self, request, pk=None):
-        """Toggle event visibility"""
-        event = Event.objects.get(pk=pk)
-        event.visibility = not event.visibility
-        event.save()
+    @action(methods=['post'], detail=True, permission_classes=(IsAuthenticated, ),
+            url_path='report', url_name='report',
+            authentication_classes=(VKAuthentication,)
+            )
+    def generateReport(self, request, pk):
+        event = models.Event.objects.get(id=pk)
+        reporter = EventReportGenerator(
+            '1s_NVTmYxG5GloDaOOw4d7eh7P_zAcobTmIRseYHsg3g')
+        url = reporter.create(event)
 
-        serializer = self.serializer_class(event, many=False)
-
-        return Response(serializer.data)
-
-    def handleUsers(self, request, pk, type='volonteer'):
-        event = Event.objects.get(pk=pk)
-        list = getattr(event, type)
-        if request.method == 'POST':
-            isRemove = self.request.query_params.get('isRemove')
-            if isRemove:
-                """delete user from type of event"""
-                try:
-                    id = request.data['id']
-                    boec = Boec.objects.get(id=id)
-                    list.remove(boec)
-                except (Boec.DoesNotExist, ValidationError):
-                    raise status.HTTP_400_BAD_REQUEST
-            else:
-                """add user to type to event"""
-                try:
-                    id = request.data['id']
-                    boec = Boec.objects.get(id=id)
-                    list.add(boec)
-                except (Boec.DoesNotExist, ValidationError):
-                    raise status.HTTP_400_BAD_REQUEST
-        """get users list"""
-        serializer = BoecInfoSerializer(list, many=True)
-        return Response(serializer.data)
-
-    @action(methods=['get', 'post'], detail=True, permission_classes=(IsAuthenticated, ),
-            url_path='volonteers', url_name='volonteers')
-    def handle_volonteers(self, request, pk=None):
-        return self.handleUsers(request=request, pk=pk, type='volonteer')
-
-    @action(methods=['get', 'post'], detail=True, permission_classes=(IsAuthenticated, ),
-            url_path='organizers', url_name='organizers')
-    def handle_organizers(self, request, pk=None):
-        return self.handleUsers(request=request, pk=pk, type='organizer')
-
-    @action(methods=['get'], detail=True, permission_classes=(IsAuthenticated, ),
-            url_path='orders', url_name='orders')
-    def get_orders(self, request, pk=None):
-        """get orders list"""
-        event = Event.objects.get(pk=pk)
-
-        serializer = serializers.OrderSerializer(event.orders, many=True)
-
-        return Response(serializer.data)
+        return Response(url)
 
 
-class EventOrdersViewSet(RevisionMixin, viewsets.ModelViewSet):
-    """manage orders in the database"""
-    serializer_class = serializers.OrderSerializer
-    queryset = EventOrder.objects.all()
+class EventParticipant(RevisionMixin, CreateListAndDestroyViewSet):
+    """manage participants in the database"""
+    serializer_class = serializers.ParticipantSerializer
+    queryset = models.Participant.objects.all()
     authentication_classes = (VKAuthentication,)
     permission_classes = (IsAuthenticated, )
-    paginator = None
 
-    def validate_ids(self, id_list, model):
-        for id in id_list:
-            try:
-                model.objects.get(id=id)
-            except (model.DoesNotExist, ValidationError):
-                raise status.HTTP_400_BAD_REQUEST
-        return True
+    def get_queryset(self):
+        return models.Participant.objects.filter(event=self.kwargs['_pk'])
 
-    def update(self, request, *args, **kwargs):
-        if 'brigades_id' in request.data:
-            id_list = request.data['brigades_id']
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['_pk'] = self.kwargs['_pk']
+        return context
 
-            self.validate_ids(id_list=id_list, model=Brigade)
-            instances = []
-            for id in id_list:
-                obj = Brigade.objects.get(id=id)
-                instances.append(obj)
-            order = EventOrder.objects.get(id=request.data['id'])
-            order.brigades.set(instances)
-            order.save()
+    def perform_create(self, serializer, worth):
+        eventId = self.kwargs['_pk']
+        event = models.Event.objects.get(id=eventId)
 
-            del request.data['brigades_id']
+        serializer.save(event=event, worth=worth)
 
-        if 'participations' in request.data:
-            id_list = list(map(
-                lambda x: x['id'], request.data['participations']
-            ))
 
-            self.validate_ids(id_list=id_list, model=Boec)
-            instances = []
-            for id in id_list:
-                obj = Boec.objects.get(id=id)
-                instances.append(obj)
-            order = EventOrder.objects.get(id=request.data['id'])
-            order.participations.set(instances)
-            order.save()
+class EventReport(RevisionMixin, mixins.CreateModelMixin,
+                  viewsets.GenericViewSet):
+    pass
 
-            del request.data['participations']
 
-        return super().update(request, *args, **kwargs)
+class EventOrganizers(EventParticipant):
+    def get_queryset(self):
+        return super().get_queryset().filter(worth=1)
+
+    def perform_create(self, serializer):
+        return super().perform_create(serializer, 1)
+
+
+class EventVolonteers(EventParticipant):
+    def get_queryset(self):
+        return super().get_queryset().filter(worth=0)
+
+    def perform_create(self, serializer):
+        return super().perform_create(serializer, 0)
