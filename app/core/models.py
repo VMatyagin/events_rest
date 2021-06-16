@@ -4,6 +4,7 @@ import uuid
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 from django.db import models
+from django.db.models.fields.related import ForeignKey
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 import reversion
@@ -305,8 +306,8 @@ class Participant(models.Model):
         verbose_name_plural = 'Участники мероприятия'
 
     boec = models.ForeignKey(
-        Boec, on_delete=models.RESTRICT, verbose_name='Участник',
-        related_name='participation'
+        Boec, on_delete=models.RESTRICT, verbose_name='Боец',
+        related_name='event_participation'
     )
 
     event = models.ForeignKey(
@@ -315,9 +316,9 @@ class Participant(models.Model):
     )
 
     class WorthEnum(models.IntegerChoices):
-        VOLONTEER = 0, _('Волонтер')
-        ORGANIZER = 1, _('Организатор')
-        DEFAULT = 3, _('Участник')
+        DEFAULT = 0, _('Участник')
+        VOLONTEER = 1, _('Волонтер')
+        ORGANIZER = 2, _('Организатор')
 
     worth = models.IntegerField(
         choices=WorthEnum.choices,
@@ -327,3 +328,93 @@ class Participant(models.Model):
 
     def __str__(self):
         return f"{self.boec.lastName} | {self.worth} | {self.event.title}"
+
+
+@reversion.register()
+class Competition(models.Model):
+    """Competition  model"""
+
+    class Meta:
+        verbose_name = 'Конкурс мероприятия'
+        verbose_name_plural = 'Конкурсы мероприятий'
+
+    event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, verbose_name='Мероприятие',
+        related_name='competitions'
+    )
+    title = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.title
+
+
+@reversion.register()
+class CompetitionParticipant(models.Model):
+    """Competition Participant model"""
+
+    class Meta:
+        verbose_name = 'Заявка на мероприятие'
+        verbose_name_plural = 'Заявки на мероприятие'
+
+    competition = models.ForeignKey(
+        Competition, on_delete=models.CASCADE, verbose_name='Конкурс',
+        related_name='competition_participation'
+    )
+    boec = models.ManyToManyField(
+        Boec,
+        related_name='competition_participation'
+    )
+    # автоматические привязывается к бойцам
+    brigades = models.ManyToManyField(
+        Brigade,
+        related_name='competition_participation',
+        blank=True
+    )
+
+    class WorthEnum(models.IntegerChoices):
+        DEFAULT = 0, _('Заявка')
+        INVOLVEMENT = 1, _('Участие/плей-офф')
+        WINNER = 2, _('Призовое место/номинация')
+        NOTWINNER = 3, _('Без рейтинговое(ая) призовое/номинация')
+
+    worth = models.IntegerField(
+        choices=WorthEnum.choices,
+        verbose_name='Статус участника',
+        default=WorthEnum.DEFAULT
+    )
+
+    def __str__(self):
+        brigades_title = ''
+        for brigade in self.brigades.all():
+            brigades_title += f"{brigade.title} | "
+        return f"{brigades_title} {self.competition.title} | {self.competition.event.title}"
+
+
+@reversion.register()
+class Nomination(models.Model):
+    """Nomination model"""
+    class Meta:
+        verbose_name = 'Номинация'
+        verbose_name_plural = 'Номинации'
+
+    title = models.CharField(max_length=255)
+    competition = models.ForeignKey(
+        Competition, on_delete=models.CASCADE, verbose_name='Конкурс',
+        related_name='nominations'
+    )
+
+    owner = models.ManyToManyField(
+        CompetitionParticipant,
+        related_name='nomination',
+        blank=True,
+    )
+
+    isRated = models.BooleanField(default=True)
+    sportPlace = models.IntegerField(
+        verbose_name='Место, если спорт',
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return f"{self.title} | {self.competition.title}"

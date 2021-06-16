@@ -2,7 +2,7 @@ import pygsheets
 from pygsheets.cell import Cell
 from pygsheets.datarange import DataRange
 from pygsheets.custom_types import HorizontalAlignment, VerticalAlignment
-from core.models import Boec, Brigade, Event, Participant, Season
+from core.models import Boec,  Season
 import datetime
 
 
@@ -56,10 +56,10 @@ class EventReportGenerator(ReportGenerator):
         nextRow = self.current_row + 1
 
         participant = Boec.objects.filter(
-            participation__event=event)
+            event_participation__event=event)
 
-        volonteers = participant.filter(participation__worth=0)
-        organizers = participant.filter(participation__worth=1)
+        volonteers = participant.filter(event_participation__worth=1)
+        organizers = participant.filter(event_participation__worth=2)
 
         info_values = [
             [['Штаб-организатор'], [event.shtab.title]],

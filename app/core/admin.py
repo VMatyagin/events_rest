@@ -135,7 +135,21 @@ class PositionAdmin(CompareVersionAdmin, admin.ModelAdmin):
     list_display = ['position', 'brigade', 'boec']
     list_filter = ('position', ActivePositionFilter,
                    ('brigade', RelatedDropdownFilter))
+
+
 class ParticipantAdmin(CompareVersionAdmin, admin.ModelAdmin):
+    pass
+
+
+class CompetitionAdmin(CompareVersionAdmin, admin.ModelAdmin):
+    pass
+
+
+class CompetitionParticipantAdmin(CompareVersionAdmin, admin.ModelAdmin):
+    pass
+
+
+class NominationAdmin(CompareVersionAdmin, admin.ModelAdmin):
     pass
 
 
@@ -148,3 +162,6 @@ admin.site.register(models.Event, EventAdmin)
 admin.site.register(models.Season, SeasonAdmin)
 admin.site.register(models.Position, PositionAdmin)
 admin.site.register(models.Participant, ParticipantAdmin)
+admin.site.register(models.Competition, CompetitionAdmin)
+admin.site.register(models.CompetitionParticipant, CompetitionParticipantAdmin)
+admin.site.register(models.Nomination, NominationAdmin)
