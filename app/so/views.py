@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from reversion.views import RevisionMixin
 
-from core.models import Boec, Brigade, Position, Season, Shtab, Area
+from core.models import Boec, Brigade, Conference, Position, Season, Shtab, Area
 from so import serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -177,3 +177,15 @@ class SeasonViewSet(RevisionMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         """Return objects"""
         return self.queryset.order_by('-year')
+
+
+class ConferenceViewSet(RevisionMixin, viewsets.ReadOnlyModelViewSet):
+    """manage conferences in the database"""
+    queryset = Conference.objects.all()
+    authentication_classes = (VKAuthentication,)
+    permission_classes = (IsAuthenticated, )
+    serializer_class = serializers.ConferenceSerializer
+
+    def get_queryset(self):
+        """Return ordered by title objects"""
+        return self.queryset.order_by('date')

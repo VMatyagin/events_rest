@@ -24,6 +24,7 @@ boec_router.register(r'positions', views.BoecPositions,
 boec_router.register(r'seasons', views.BoecSeasons,
                         basename='boec-seasons')
 
+router.register(r'conference', views.ConferenceViewSet)
 
 router.register('season', views.SeasonViewSet)
 

@@ -4,7 +4,6 @@ import uuid
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 from django.db import models
-from django.db.models.fields.related import ForeignKey
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 import reversion
@@ -145,7 +144,6 @@ class Brigade(models.Model):
     shtab = models.ForeignKey(Shtab, on_delete=models.RESTRICT)
     boec = models.ManyToManyField(Boec, blank=True, related_name='brigades')
     DOB = models.DateTimeField(null=True, blank=True)
-    status = models.BooleanField(default=True)
     created_at = models.DateField(default=timezone.now)
     updated_at = AutoDateTimeField(default=timezone.now)
 
@@ -418,3 +416,30 @@ class Nomination(models.Model):
 
     def __str__(self):
         return f"{self.title} | {self.competition.title}"
+
+
+@reversion.register()
+class Conference(models.Model):
+    """Conference model"""
+    class Meta:
+        verbose_name = 'Конференция'
+        verbose_name_plural = 'Конференции'
+
+    date = models.DateTimeField(
+        verbose_name='Дата проведения'
+    )
+
+    brigades = models.ManyToManyField(
+        Brigade,
+        related_name='conference',
+        blank=True
+    )
+
+    shtabs = models.ManyToManyField(
+        Shtab,
+        related_name='conference',
+        blank=True
+    )
+
+    def __str__(self):
+        return f"{self.date} | {self.brigades.count()} отрядов | {self.shtabs.count()} штабов"

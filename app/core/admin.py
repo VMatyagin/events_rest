@@ -152,6 +152,9 @@ class CompetitionParticipantAdmin(CompareVersionAdmin, admin.ModelAdmin):
 class NominationAdmin(CompareVersionAdmin, admin.ModelAdmin):
     pass
 
+class ConferenceAdmin(CompareVersionAdmin, admin.ModelAdmin):
+    pass
+
 
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Shtab, ShtabAdmin)
@@ -165,3 +168,4 @@ admin.site.register(models.Participant, ParticipantAdmin)
 admin.site.register(models.Competition, CompetitionAdmin)
 admin.site.register(models.CompetitionParticipant, CompetitionParticipantAdmin)
 admin.site.register(models.Nomination, NominationAdmin)
+admin.site.register(models.Conference, ConferenceAdmin)

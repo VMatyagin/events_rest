@@ -2,7 +2,7 @@ from django.db.models import fields
 from django.db.models.aggregates import StdDev
 from rest_framework import serializers
 
-from core.models import Area, Boec, Brigade, Position, Season, Shtab
+from core.models import Area, Boec, Brigade, Conference, Position, Season, Shtab
 from core.serializers import DynamicFieldsModelSerializer
 
 
@@ -149,3 +149,12 @@ class PositionSerializer(serializers.ModelSerializer):
                   'shtab', 'fromDate', 'toDate', 'boecId',
                   )
         read_only_fields = ('id', 'boec')
+
+
+class ConferenceSerializer(serializers.ModelSerializer):
+    """serializer for conference objects"""
+
+    class Meta:
+        model = Conference
+        fields = ('id', 'brigades', 'date', 'shtabs')
+        read_only_fields = ('id', )
