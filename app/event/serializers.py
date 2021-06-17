@@ -14,7 +14,8 @@ class EventSerializer(DynamicFieldsModelSerializer):
     shtab = ShtabSerializer(read_only=True)
     shtabId = serializers.PrimaryKeyRelatedField(
         queryset=Shtab.objects.all(),
-        source='shtab'
+        source='shtab',
+        required=False
     )
 
     class Meta:
