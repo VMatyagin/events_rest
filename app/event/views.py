@@ -184,3 +184,13 @@ class NominationView (
         else:
             raise ValidationError(
                 {'error': 'You should not use this endpoint for creating CompetitionParticipant objects'}, code='validation')
+
+    def perform_destroy(self, instance):
+        owner = instance.owner.all()
+        if owner.count() > 0:
+            for owner in owner.iterator():
+                logger.error(owner)
+                owner.worth = 1
+                owner.save()
+
+        return super().perform_destroy(instance)
