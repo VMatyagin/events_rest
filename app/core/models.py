@@ -214,6 +214,10 @@ class Event(models.Model):
         default=False,
         verbose_name='Видимость'
     )
+    isCanonical = models.BooleanField(
+        default=False,
+        verbose_name='Каноничность'
+    )
 
     def __str__(self):
         return self.title
