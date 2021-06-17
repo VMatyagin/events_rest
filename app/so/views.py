@@ -53,7 +53,7 @@ class BoecViewSet(RevisionMixin, viewsets.ModelViewSet):
     authentication_classes = (VKAuthentication,)
     permission_classes = (IsAuthenticated, )
     filter_backends = [filters.SearchFilter]
-    search_fields = ('^lastName', )
+    search_fields = ('^lastName', 'firstName')
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -68,6 +68,18 @@ class BoecViewSet(RevisionMixin, viewsets.ModelViewSet):
         if brigadeId is not None:
             queryset = queryset.filter(brigades=brigadeId)
         return queryset
+
+    def perform_create(self, serializer):
+        if 'brigadeId' not in self.request.data:
+            raise ValidationError(
+                {'error': 'You should pass brigadeId for Boec creating'}, code='validation')
+        brigade = Brigade.objects.get(
+            id=self.request.data['brigadeId']
+        )
+
+        boec = serializer.save()
+
+        brigade.boec.add(boec)
 
     # @action(methods=['get'], detail=True, permission_classes=(IsAuthenticated, ),
     #         url_path='seasons', url_name='seasons',
