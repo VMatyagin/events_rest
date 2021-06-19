@@ -15,7 +15,7 @@ def isort(session):
 @nox.session(python=PYTHON_VERSIONS)
 def lint(session):
     args = session.posargs or locations
-    session.install("flake8", "flake8-isort", "flake8-bugbear")
+    session.install("flake8", "flake8-isort", "flake8-bugbear", "flake8-bandit")
     session.run("flake8", *args)
 
 

@@ -1,3 +1,4 @@
+import os
 from base64 import b64encode
 from hashlib import sha256
 from hmac import HMAC
@@ -9,7 +10,7 @@ from rest_framework import exceptions
 from rest_framework.authentication import BaseAuthentication, get_authorization_header
 
 # Защищённый ключ из настроек вашего приложения
-client_secret = "yvvyGdRpObCuxrRuChYQ"
+client_secret = os.environ.get("VK_CLIENT_SECRET", "yvvyGdRpObCuxrRuChYQ")
 
 
 def is_valid(query: dict, secret: str) -> bool:

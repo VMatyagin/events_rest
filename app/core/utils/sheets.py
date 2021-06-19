@@ -142,7 +142,7 @@ class EventReportGenerator(ReportGenerator):
         style_range.apply_format(style_cell)
 
         ranges = []
-        for index, title in enumerate(values):
+        for index, _ in enumerate(values):
             info_cell = Cell(
                 (style_cell.row + index, style_cell.col + 1), worksheet=self.wks
             )
