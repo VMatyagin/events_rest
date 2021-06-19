@@ -60,4 +60,11 @@ def black(session):
     session.run("black", *args)
 
 
-nox.options.sessions = ("lint", "safety")
+@nox.session(python=PYTHON_VERSIONS)
+def mypy(session):
+    args = session.posargs or locations
+    install_with_constraints(session, "mypy")
+    session.run("mypy", *args)
+
+
+nox.options.sessions = ("lint", "mypy", "safety")
