@@ -159,11 +159,7 @@ class EventCompetitionParticipants(RevisionMixin, viewsets.ModelViewSet):
         return context
 
     def perform_create(self, serializer):
-        if "competition_pk" in self.kwargs:
-            competitionId = self.kwargs["competition_pk"]
-            competition = models.Competition.objects.get(id=competitionId)
-            serializer.save(competition=competition)
-        else:
+        if "competition_pk" not in self.kwargs:
             raise ValidationError(
                 {
                     "error": "You should not use this endpoint for creating "
@@ -171,6 +167,9 @@ class EventCompetitionParticipants(RevisionMixin, viewsets.ModelViewSet):
                 },
                 code="validation",
             )
+        competitionId = self.kwargs["competition_pk"]
+        competition = models.Competition.objects.get(id=competitionId)
+        serializer.save(competition=competition)
 
 
 class NominationView(RevisionMixin, viewsets.ModelViewSet):
@@ -193,11 +192,7 @@ class NominationView(RevisionMixin, viewsets.ModelViewSet):
         return context
 
     def perform_create(self, serializer):
-        if "competition_pk" in self.kwargs:
-            competitionId = self.kwargs["competition_pk"]
-            competition = models.Competition.objects.get(id=competitionId)
-            serializer.save(competition=competition)
-        else:
+        if "competition_pk" not in self.kwargs:
             raise ValidationError(
                 {
                     "error": "You should not use this endpoint for creating "
@@ -205,6 +200,9 @@ class NominationView(RevisionMixin, viewsets.ModelViewSet):
                 },
                 code="validation",
             )
+        competitionId = self.kwargs["competition_pk"]
+        competition = models.Competition.objects.get(id=competitionId)
+        serializer.save(competition=competition)
 
     def perform_destroy(self, instance):
         owner = instance.owner.all()

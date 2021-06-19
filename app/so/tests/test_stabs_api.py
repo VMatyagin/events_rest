@@ -38,8 +38,8 @@ class PrivateShtabApiTest(TestCase):
 
         res = self.client.get(SHTAB_URL)
 
-        list = Shtab.objects.all().order_by("-title")
-        serializer = ShtabSerializer(list, many=True)
+        lst = Shtab.objects.all().order_by("-title")
+        serializer = ShtabSerializer(lst, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data["items"], serializer.data)

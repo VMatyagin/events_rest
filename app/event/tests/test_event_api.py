@@ -38,8 +38,8 @@ class PrivateEventApiTest(TestCase):
 
         res = self.client.get(EVENT_URL)
 
-        list = Event.objects.all().order_by("-title")
-        serializer = EventSerializer(list, many=True)
+        lst = Event.objects.all().order_by("-title")
+        serializer = EventSerializer(lst, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data["items"], serializer.data)

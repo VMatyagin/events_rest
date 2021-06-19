@@ -45,8 +45,8 @@ class PrivateBoecApiTest(TestCase):
 
         res = self.client.get(BOEC_URL)
 
-        list = Boec.objects.all().order_by("-id")
-        serializer = BoecShortSerializer(list, many=True)
+        lst = Boec.objects.all().order_by("-id")
+        serializer = BoecShortSerializer(lst, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data["items"], serializer.data)

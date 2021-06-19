@@ -49,8 +49,8 @@ class PrivateBrigadeApiTest(TestCase):
         Brigade.objects.create(title="aname", area=sample_area(), shtab=sample_shtab())
         res = self.client.get(BRIGADE_URL)
 
-        list = Brigade.objects.all().order_by("-title")
-        serializer = BrigadeShortSerializer(list, many=True)
+        lst = Brigade.objects.all().order_by("-title")
+        serializer = BrigadeShortSerializer(lst, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data["items"], serializer.data)

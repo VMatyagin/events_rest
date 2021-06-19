@@ -1,5 +1,6 @@
 [flake8]
-select = B,B9,BLK,C,E,F,I,S,W
+# DJ for Django
+select = A,B,B9,BLK,C,E,F,I,S,W,C4,SIM,CCR
 max-complexity = 10
 ignore = E203,W503
 max-line-length = 100

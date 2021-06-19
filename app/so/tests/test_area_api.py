@@ -38,8 +38,8 @@ class PrivateAreaApiTest(TestCase):
 
         res = self.client.get(AREA_URL)
 
-        list = Area.objects.all().order_by("-shortTitle")
-        serializer = AreaSerializer(list, many=True)
+        lst = Area.objects.all().order_by("-shortTitle")
+        serializer = AreaSerializer(lst, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data["items"], serializer.data)

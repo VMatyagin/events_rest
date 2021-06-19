@@ -48,7 +48,16 @@ def isort(session):
 def lint(session):
     args = session.posargs or locations
     install_with_constraints(
-        session, "flake8", "flake8-isort", "flake8-bugbear", "flake8-bandit"
+        session,
+        "flake8",
+        "flake8-isort",
+        "flake8-bugbear",
+        "flake8-bandit",
+        "flake8-builtins",
+        "flake8-comprehensions",
+        "flake8-django",
+        "flake8-simplify",
+        "flake8-cognitive-complexity",
     )
     session.run("flake8", *args)
 
