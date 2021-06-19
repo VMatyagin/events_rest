@@ -6,30 +6,50 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0012_auto_20210616_1654'),
+        ("core", "0012_auto_20210616_1654"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='brigade',
-            name='status',
+            model_name="brigade",
+            name="status",
         ),
         migrations.AlterField(
-            model_name='nomination',
-            name='sportPlace',
-            field=models.IntegerField(blank=True, null=True, verbose_name='Место, если спорт'),
+            model_name="nomination",
+            name="sportPlace",
+            field=models.IntegerField(
+                blank=True, null=True, verbose_name="Место, если спорт"
+            ),
         ),
         migrations.CreateModel(
-            name='Conference',
+            name="Conference",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateTimeField(verbose_name='Дата проведения')),
-                ('brigades', models.ManyToManyField(blank=True, related_name='conference', to='core.Brigade')),
-                ('shtabs', models.ManyToManyField(blank=True, related_name='conference', to='core.Shtab')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date", models.DateTimeField(verbose_name="Дата проведения")),
+                (
+                    "brigades",
+                    models.ManyToManyField(
+                        blank=True, related_name="conference", to="core.Brigade"
+                    ),
+                ),
+                (
+                    "shtabs",
+                    models.ManyToManyField(
+                        blank=True, related_name="conference", to="core.Shtab"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Конференция',
-                'verbose_name_plural': 'Конференции',
+                "verbose_name": "Конференция",
+                "verbose_name_plural": "Конференции",
             },
         ),
     ]

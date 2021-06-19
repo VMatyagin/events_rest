@@ -1,10 +1,21 @@
-from rest_framework import serializers
-
-from core.models import Boec, Brigade, Competition, CompetitionParticipant, Event, Nomination, Participant, Season, Shtab
-from core.serializers import DynamicFieldsModelSerializer
-from so.serializers import BoecInfoSerializer, BrigadeShortSerializer, ShtabSerializer
-from django.utils.translation import ugettext_lazy as _
 import logging
+
+from core.models import (
+    Boec,
+    Brigade,
+    Competition,
+    CompetitionParticipant,
+    Event,
+    Nomination,
+    Participant,
+    Season,
+    Shtab,
+)
+from core.serializers import DynamicFieldsModelSerializer
+from django.utils.translation import ugettext_lazy as _
+from rest_framework import serializers
+from so.serializers import BoecInfoSerializer, BrigadeShortSerializer, ShtabSerializer
+
 logger = logging.getLogger(__name__)
 
 
@@ -13,106 +24,116 @@ class EventSerializer(DynamicFieldsModelSerializer):
 
     shtab = ShtabSerializer(read_only=True)
     shtabId = serializers.PrimaryKeyRelatedField(
-        queryset=Shtab.objects.all(),
-        source='shtab',
-        required=False
+        queryset=Shtab.objects.all(), source="shtab", required=False
     )
 
     class Meta:
         model = Event
-        fields = ('id', 'status', 'title', 'description',
-                  'location', 'shtab', 'startDate', 'startTime',
-                  'visibility', 'worth', 'shtabId')
-        read_only_fields = ('id', 'shtab')
+        fields = (
+            "id",
+            "status",
+            "title",
+            "description",
+            "location",
+            "shtab",
+            "startDate",
+            "startTime",
+            "visibility",
+            "worth",
+            "shtabId",
+        )
+        read_only_fields = ("id", "shtab")
 
 
 class ParticipantSerializer(DynamicFieldsModelSerializer):
     """serializer for participants"""
 
-    event = EventSerializer(fields=('id', 'title'), required=False)
+    event = EventSerializer(fields=("id", "title"), required=False)
     eventId = serializers.PrimaryKeyRelatedField(
-        queryset=Brigade.objects.all(),
-        source='event',
-        required=False
-
+        queryset=Brigade.objects.all(), source="event", required=False
     )
 
     boec = BoecInfoSerializer(required=False)
     boecId = serializers.PrimaryKeyRelatedField(
         queryset=Boec.objects.all(),
-        source='boec',
+        source="boec",
     )
 
     def validate_boecId(self, value):
         participant = Participant.objects.filter(
-            event=self.context['event_pk'],
-            boec=value
+            event=self.context["event_pk"], boec=value
         )
         if participant:
             raise serializers.ValidationError(
-                {'error': 'Boec already included'}, code='validation'
+                {"error": "Boec already included"}, code="validation"
             )
         return value
 
     def validate(self, attrs):
         try:
-            Event.objects.get(id=self.context['event_pk'])
+            Event.objects.get(id=self.context["event_pk"])
         except (Event.DoesNotExist):
-            msg = _('Invalid event')
-            raise serializers.ValidationError(
-                {'error': msg}, code='validation')
+            msg = _("Invalid event")
+            raise serializers.ValidationError({"error": msg}, code="validation")
 
         return super().validate(attrs)
 
     class Meta:
         model = Participant
-        fields = ('id', 'boec', 'event', 'worth', 'boecId', 'eventId')
-        read_only_fields = ('id', 'boec', 'event')
+        fields = ("id", "boec", "event", "worth", "boecId", "eventId")
+        read_only_fields = ("id", "boec", "event")
 
 
 class CompetitionSerializer(DynamicFieldsModelSerializer):
     """serializer for Competition"""
 
     def validate(self, attrs):
-        if 'event_pk' in self.context:
+        if "event_pk" in self.context:
             try:
-                Event.objects.get(id=self.context['event_pk'])
+                Event.objects.get(id=self.context["event_pk"])
             except (Event.DoesNotExist):
-                msg = _('Invalid event')
-                raise serializers.ValidationError(
-                    {'error': msg}, code='validation')
+                msg = _("Invalid event")
+                raise serializers.ValidationError({"error": msg}, code="validation")
         return super().validate(attrs)
 
-    participant_count = serializers.SerializerMethodField(
-        'get_participant_count')
+    participant_count = serializers.SerializerMethodField("get_participant_count")
 
     def get_participant_count(self, obj):
         return obj.competition_participation.filter(worth=0).count()
 
-    ivolvement_count = serializers.SerializerMethodField(
-        'get_ivolvement_count')
+    ivolvement_count = serializers.SerializerMethodField("get_ivolvement_count")
 
     def get_ivolvement_count(self, obj):
         return obj.competition_participation.filter(worth=1).count()
 
-    winner_count = serializers.SerializerMethodField(
-        'get_winner_count')
+    winner_count = serializers.SerializerMethodField("get_winner_count")
 
     def get_winner_count(self, obj):
         return obj.competition_participation.filter(worth=2).count()
 
-    notwinner_count = serializers.SerializerMethodField(
-        'get_notwinner_count')
+    notwinner_count = serializers.SerializerMethodField("get_notwinner_count")
 
     def get_notwinner_count(self, obj):
         return obj.competition_participation.filter(worth=3).count()
 
     class Meta:
         model = Competition
-        fields = ('id', 'event', 'title', 'participant_count',
-                  'ivolvement_count', 'winner_count', 'notwinner_count')
-        read_only_fields = ('id', 'participant_count',
-                            'ivolvement_count', 'winner_count', 'notwinner_count')
+        fields = (
+            "id",
+            "event",
+            "title",
+            "participant_count",
+            "ivolvement_count",
+            "winner_count",
+            "notwinner_count",
+        )
+        read_only_fields = (
+            "id",
+            "participant_count",
+            "ivolvement_count",
+            "winner_count",
+            "notwinner_count",
+        )
         extra_kwargs = {"event": {"required": False}}
 
 
@@ -120,20 +141,18 @@ class NominationSerializer(DynamicFieldsModelSerializer):
     """serializer for Competition"""
 
     def validate(self, attrs):
-        if 'competition_pk' in self.context:
+        if "competition_pk" in self.context:
             try:
-                Competition.objects.get(id=self.context['competition_pk'])
+                Competition.objects.get(id=self.context["competition_pk"])
             except (Competition.DoesNotExist):
-                msg = _('Invalid Competition')
-                raise serializers.ValidationError(
-                    {'error': msg}, code='validation')
+                msg = _("Invalid Competition")
+                raise serializers.ValidationError({"error": msg}, code="validation")
         return super().validate(attrs)
 
     class Meta:
         model = Nomination
-        fields = ('id', 'competition', 'title',
-                  'owner', 'isRated', 'sportPlace')
-        read_only_fields = ('id', )
+        fields = ("id", "competition", "title", "owner", "isRated", "sportPlace")
+        read_only_fields = ("id",)
         extra_kwargs = {
             "competition": {"required": False},
         }
@@ -143,24 +162,21 @@ class CompetitionParticipantsSerializer(DynamicFieldsModelSerializer):
     """serializer for participants Competition"""
 
     def validate(self, attrs):
-        if 'competition_pk' in self.context:
+        if "competition_pk" in self.context:
             try:
-                Competition.objects.get(id=self.context['competition_pk'])
+                Competition.objects.get(id=self.context["competition_pk"])
             except (Competition.DoesNotExist):
-                msg = _('Invalid Competition')
-                raise serializers.ValidationError(
-                    {'error': msg}, code='validation')
+                msg = _("Invalid Competition")
+                raise serializers.ValidationError({"error": msg}, code="validation")
         return super().validate(attrs)
 
     def create(self, validated_data):
-        if 'brigades' in validated_data:
-            del validated_data['brigades']
+        if "brigades" in validated_data:
+            del validated_data["brigades"]
 
-        if 'boec' in validated_data:
-            boec_list = validated_data.pop('boec')
-        instance = CompetitionParticipant.objects.create(
-            **validated_data
-        )
+        if "boec" in validated_data:
+            boec_list = validated_data.pop("boec")
+        instance = CompetitionParticipant.objects.create(**validated_data)
 
         if boec_list:
             instance.boec.set(boec_list)
@@ -168,29 +184,37 @@ class CompetitionParticipantsSerializer(DynamicFieldsModelSerializer):
             brigade_list = set()
             for boec in boec_list:
 
-                boec_last_season = Season.objects.filter(
-                    boec=boec
-                ).order_by('year').first()
+                boec_last_season = (
+                    Season.objects.filter(boec=boec).order_by("year").first()
+                )
 
                 brigade_list.add(boec_last_season.brigade)
             instance.brigades.set(brigade_list)
         return instance
 
     def update(self, instance, validated_data):
-        if 'worth' in validated_data and validated_data['worth'] > 1:
-            if 'nominationId' not in self.context['request'].data:
+        if "worth" in validated_data and validated_data["worth"] > 1:
+            if "nominationId" not in self.context["request"].data:
                 raise serializers.ValidationError(
-                    {'error': 'You should pass nominationId for updating worth above 1'}, code='validation')
+                    {
+                        "error": "You should pass nominationId for updating worth above 1"
+                    },
+                    code="validation",
+                )
             nomination = Nomination.objects.get(
-                id=self.context['request'].data['nominationId']
+                id=self.context["request"].data["nominationId"]
             )
 
             if not nomination.isRated:
-                validated_data['worth'] = 3
+                validated_data["worth"] = 3
 
             nomination.owner.add(instance)
 
-        if 'worth' in validated_data and validated_data['worth'] <= 1 and instance.nomination.count() > 0:
+        if (
+            "worth" in validated_data
+            and validated_data["worth"] <= 1
+            and instance.nomination.count() > 0
+        ):
             for nomination in instance.nomination.iterator():
                 nomination.owner.remove(instance)
 
@@ -198,8 +222,8 @@ class CompetitionParticipantsSerializer(DynamicFieldsModelSerializer):
 
     def to_representation(self, instance):
         representation = super(
-            CompetitionParticipantsSerializer,
-            self).to_representation(instance)
+            CompetitionParticipantsSerializer, self
+        ).to_representation(instance)
 
         # восстановить, если понадобятся ФИО
         # representation['boec'] = BoecInfoSerializer(
@@ -207,14 +231,12 @@ class CompetitionParticipantsSerializer(DynamicFieldsModelSerializer):
         return representation
 
     brigades = BrigadeShortSerializer(many=True, read_only=True)
-    nomination = NominationSerializer(
-        many=True, read_only=True, fields=('id', 'title'))
+    nomination = NominationSerializer(many=True, read_only=True, fields=("id", "title"))
 
     class Meta:
         model = CompetitionParticipant
-        fields = ('id', 'competition', 'boec',
-                  'worth', 'brigades', 'nomination')
-        read_only_fields = ('id', 'brigades')
+        fields = ("id", "competition", "boec", "worth", "brigades", "nomination")
+        read_only_fields = ("id", "brigades")
         extra_kwargs = {
             "competition": {"required": False},
             "nomination": {"required": False},

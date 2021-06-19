@@ -4,7 +4,4 @@ from rest_framework.response import Response
 
 class StyledPagination(pagination.LimitOffsetPagination):
     def get_paginated_response(self, data):
-        return Response({
-            'count': self.count,
-            'items': data
-        })
+        return Response({"count": self.count, "items": data})

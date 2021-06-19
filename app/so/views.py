@@ -1,46 +1,48 @@
-from datetime import datetime, timezone
-from rest_framework import generics, viewsets, mixins
-from rest_framework.permissions import IsAuthenticated
-from core.authentication import VKAuthentication
-from rest_framework import filters
 import logging
+from datetime import datetime
+
+from core.authentication import VKAuthentication
+from core.models import Area, Boec, Brigade, Conference, Position, Season, Shtab
 from django.utils.translation import ugettext_lazy as _
-
-from reversion.views import RevisionMixin
-
-from core.models import Boec, Brigade, Conference, Position, Season, Shtab, Area
-from so import serializers
+from rest_framework import filters, mixins, viewsets
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from reversion.views import RevisionMixin
+from so import serializers
 
 
-class CreateListRetrieveViewSet(mixins.CreateModelMixin,
-                                mixins.ListModelMixin,
-                                mixins.RetrieveModelMixin,
-                                viewsets.GenericViewSet):
+class CreateListRetrieveViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
 
     pass
 
 
 class ShtabViewSet(RevisionMixin, viewsets.ModelViewSet):
     """manage shtabs in the database"""
+
     serializer_class = serializers.ShtabSerializer
     queryset = Shtab.objects.all()
     authentication_classes = (VKAuthentication,)
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         """Return ordered by title objects"""
-        return self.queryset.order_by('title')
+        return self.queryset.order_by("title")
 
 
 class AreaViewSet(RevisionMixin, viewsets.ModelViewSet):
     """manage shtabs in the database"""
+
     serializer_class = serializers.AreaSerializer
     queryset = Area.objects.all()
     authentication_classes = (VKAuthentication,)
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         """Return ordered by shortTitle objects"""
@@ -49,33 +51,34 @@ class AreaViewSet(RevisionMixin, viewsets.ModelViewSet):
 
 class BoecViewSet(RevisionMixin, viewsets.ModelViewSet):
     """manage boecs in the database"""
+
     queryset = Boec.objects.all()
     authentication_classes = (VKAuthentication,)
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
     filter_backends = [filters.SearchFilter]
-    search_fields = ('^lastName', 'firstName')
+    search_fields = ("^lastName", "firstName")
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action == "list":
             return serializers.BoecInfoSerializer
         return serializers.BoecSerializer
 
     def get_queryset(self):
         """Return ordered by id objects"""
-        queryset = self.queryset.order_by('lastName')
+        queryset = self.queryset.order_by("lastName")
 
-        brigadeId = self.request.query_params.get('brigadeId', None)
+        brigadeId = self.request.query_params.get("brigadeId", None)
         if brigadeId is not None:
             queryset = queryset.filter(brigades=brigadeId)
         return queryset
 
     def perform_create(self, serializer):
-        if 'brigadeId' not in self.request.data:
+        if "brigadeId" not in self.request.data:
             raise ValidationError(
-                {'error': 'You should pass brigadeId for Boec creating'}, code='validation')
-        brigade = Brigade.objects.get(
-            id=self.request.data['brigadeId']
-        )
+                {"error": "You should pass brigadeId for Boec creating"},
+                code="validation",
+            )
+        brigade = Brigade.objects.get(id=self.request.data["brigadeId"])
 
         boec = serializer.save()
 
@@ -95,37 +98,38 @@ class BoecViewSet(RevisionMixin, viewsets.ModelViewSet):
 class BoecPositions(RevisionMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.PositionSerializer
     authentication_classes = (VKAuthentication,)
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
     pagination_class = None
 
     def get_queryset(self):
-        return Position.objects.filter(boec=self.kwargs['boec_pk'])
+        return Position.objects.filter(boec=self.kwargs["boec_pk"])
 
 
 class BoecSeasons(RevisionMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.SeasonSerializer
     authentication_classes = (VKAuthentication,)
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
     pagination_class = None
 
     def get_queryset(self):
-        return Season.objects.filter(boec=self.kwargs['boec_pk'])
+        return Season.objects.filter(boec=self.kwargs["boec_pk"])
 
 
 class BrigadeViewSet(RevisionMixin, viewsets.ModelViewSet):
     """manage brigades in the database"""
+
     queryset = Brigade.objects.all()
     authentication_classes = (VKAuthentication,)
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action == "list":
             return serializers.BrigadeShortSerializer
         return serializers.BrigadeSerializer
 
     def get_queryset(self):
         """Return ordered by title objects"""
-        return self.queryset.order_by('title')
+        return self.queryset.order_by("title")
 
 
 logger = logging.getLogger(__name__)
@@ -134,34 +138,38 @@ logger = logging.getLogger(__name__)
 class BrigadePositions(RevisionMixin, CreateListRetrieveViewSet):
     serializer_class = serializers.PositionSerializer
     authentication_classes = (VKAuthentication,)
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
     pagination_class = None
 
     def get_queryset(self):
-        return Position.objects.filter(brigade=self.kwargs['brigade_pk'], toDate=None)
+        return Position.objects.filter(brigade=self.kwargs["brigade_pk"], toDate=None)
 
     def perform_create(self, serializer):
         try:
-            brigade = Brigade.objects.get(id=self.kwargs['brigade_pk'])
+            brigade = Brigade.objects.get(id=self.kwargs["brigade_pk"])
         except (Brigade.DoesNotExist, ValidationError):
-            msg = _('Invalid brigade.')
-            raise ValidationError(
-                {'error': msg}, code='validation')
+            msg = _("Invalid brigade.")
+            raise ValidationError({"error": msg}, code="validation")
 
         serializer.save(brigade=brigade)
 
-    @action(methods=['post'], detail=True,
-            permission_classes=(IsAuthenticated, ),
-            authentication_classes=(VKAuthentication,),
-            url_path='remove', url_name='remove')
+    @action(
+        methods=["post"],
+        detail=True,
+        permission_classes=(IsAuthenticated,),
+        authentication_classes=(VKAuthentication,),
+        url_path="remove",
+        url_name="remove",
+    )
     def removeBrigadePosition(self, request, pk, brigade_pk):
         instance = self.get_object()
         serializer = self.get_serializer(
-            instance, data={'toDate': datetime.now()}, partial=True)
+            instance, data={"toDate": datetime.now()}, partial=True
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        if getattr(instance, '_prefetched_objects_cache', None):
+        if getattr(instance, "_prefetched_objects_cache", None):
             # If 'prefetch_related' has been applied to a queryset, we need to
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
@@ -172,32 +180,36 @@ class BrigadePositions(RevisionMixin, CreateListRetrieveViewSet):
 class BrigadeSeasons(RevisionMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.SeasonSerializer
     authentication_classes = (VKAuthentication,)
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
     pagination_class = None
 
     def get_queryset(self):
-        return Season.objects.filter(brigade=self.kwargs['brigade_pk']).order_by('boec__lastName')
+        return Season.objects.filter(brigade=self.kwargs["brigade_pk"]).order_by(
+            "boec__lastName"
+        )
 
 
 class SeasonViewSet(RevisionMixin, viewsets.ModelViewSet):
     """manage seasons in the database"""
+
     serializer_class = serializers.SeasonSerializer
     queryset = Season.objects.all()
     authentication_classes = (VKAuthentication,)
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         """Return objects"""
-        return self.queryset.order_by('-year')
+        return self.queryset.order_by("-year")
 
 
 class ConferenceViewSet(RevisionMixin, viewsets.ReadOnlyModelViewSet):
     """manage conferences in the database"""
+
     queryset = Conference.objects.all()
     authentication_classes = (VKAuthentication,)
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
     serializer_class = serializers.ConferenceSerializer
 
     def get_queryset(self):
         """Return ordered by title objects"""
-        return self.queryset.order_by('date')
+        return self.queryset.order_by("date")

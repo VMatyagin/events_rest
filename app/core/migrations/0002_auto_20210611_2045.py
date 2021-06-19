@@ -6,13 +6,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0001_initial'),
+        ("core", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='event',
-            name='worth',
-            field=models.IntegerField(choices=[(0, 'Не учитывается'), (1, 'Творчество'), (2, 'Спорт'), (3, 'Волонтерство'), (4, 'Образовательный'), (5, 'Городское')], default=0, verbose_name='Ценность блоков'),
+            model_name="event",
+            name="worth",
+            field=models.IntegerField(
+                choices=[
+                    (0, "Не учитывается"),
+                    (1, "Творчество"),
+                    (2, "Спорт"),
+                    (3, "Волонтерство"),
+                    (4, "Образовательный"),
+                    (5, "Городское"),
+                ],
+                default=0,
+                verbose_name="Ценность блоков",
+            ),
         ),
     ]

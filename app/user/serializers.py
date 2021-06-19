@@ -1,22 +1,23 @@
 from core.auth_backend import PasswordlessAuthBackend
+from core.models import Position
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
-
-from core.models import Position
 
 
 class UserSerializer(serializers.ModelSerializer):
     """serializer for the users object"""
 
-    brigades = serializers.SerializerMethodField('get_editable_brigades')
+    brigades = serializers.SerializerMethodField("get_editable_brigades")
 
     def get_editable_brigades(self, obj):
-        positions = Position.objects.filter(
-            toDate__isnull=True, shtab__isnull=True, boec__vkId=obj.vkId
-        ).values_list(
-            'id', flat=True
-        ).distinct()
+        positions = (
+            Position.objects.filter(
+                toDate__isnull=True, shtab__isnull=True, boec__vkId=obj.vkId
+            )
+            .values_list("id", flat=True)
+            .distinct()
+        )
 
         return positions
 
@@ -38,7 +39,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ('id', 'brigades')
+        fields = ("id", "brigades")
         # extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}
 
     def create(self, validated_data):
@@ -59,6 +60,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class AuthTokenSerializer(serializers.Serializer):
     """serializer for the user authentication object"""
+
     vkId = serializers.IntegerField()
     # password = serializers.CharField(
     #     style={'input_type': 'password'},
@@ -67,17 +69,17 @@ class AuthTokenSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         """validate and authenticate the user"""
-        vkId = attrs.get('vkId')
+        vkId = attrs.get("vkId")
         # password = attrs.get('password')
 
         user = PasswordlessAuthBackend.authenticate(
-            request=self.context.get('request'),
+            request=self.context.get("request"),
             vkId=vkId,
             # password=password
         )
         if not user:
-            msg = _('Unable to authenticate with provided credentials')
-            raise serializers.ValidationError(msg, code='authentication')
+            msg = _("Unable to authenticate with provided credentials")
+            raise serializers.ValidationError(msg, code="authentication")
 
-        attrs['user'] = user
+        attrs["user"] = user
         return attrs

@@ -1,9 +1,6 @@
-from django.db.models import fields
-from django.db.models.aggregates import StdDev
-from rest_framework import serializers
-
 from core.models import Area, Boec, Brigade, Conference, Position, Season, Shtab
 from core.serializers import DynamicFieldsModelSerializer
+from rest_framework import serializers
 
 
 class ShtabSerializer(serializers.ModelSerializer):
@@ -11,14 +8,13 @@ class ShtabSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Shtab
-        fields = ('id', 'title')
-        read_only_fields = ('id',)
+        fields = ("id", "title")
+        read_only_fields = ("id",)
 
 
 class FilteredListSerializer(serializers.ListSerializer):
-
     def to_representation(self, data):
-        shtabId = self.context['request'].query_params.get('shtab')
+        shtabId = self.context["request"].query_params.get("shtab")
         if shtabId is not None:
             data = data.filter(shtab=shtabId)
 
@@ -31,22 +27,22 @@ class BrigadeShortSerializer(serializers.ModelSerializer):
     class Meta:
         list_serializer_class = FilteredListSerializer
         model = Brigade
-        fields = ('id', 'title', 'area')
-        read_only_fields = ('id', )
+        fields = ("id", "title", "area")
+        read_only_fields = ("id",)
 
 
 class BoecInfoSerializer(serializers.ModelSerializer):
     """serializer for boec objects"""
-    fullName = serializers.SerializerMethodField('get_full_name')
+
+    fullName = serializers.SerializerMethodField("get_full_name")
 
     def get_full_name(self, obj):
         return f"{obj.lastName} {obj.firstName} {obj.middleName}"
 
     class Meta:
         model = Boec
-        fields = ('id', 'firstName', 'lastName',
-                  'middleName', 'fullName')
-        read_only_fields = ('id', 'fullName')
+        fields = ("id", "firstName", "lastName", "middleName", "fullName")
+        read_only_fields = ("id", "fullName")
 
 
 class SeasonSerializer(DynamicFieldsModelSerializer):
@@ -54,38 +50,41 @@ class SeasonSerializer(DynamicFieldsModelSerializer):
 
     brigade = BrigadeShortSerializer(read_only=True)
     brigadeId = serializers.PrimaryKeyRelatedField(
-        queryset=Brigade.objects.all(),
-        source='brigade')
+        queryset=Brigade.objects.all(), source="brigade"
+    )
     boecId = serializers.PrimaryKeyRelatedField(
-        queryset=Boec.objects.all(),
-        source='boec')
+        queryset=Boec.objects.all(), source="boec"
+    )
 
     boec = BoecInfoSerializer(read_only=True)
 
     class Meta:
         model = Season
-        fields = ('id', 'boec', 'year', 'brigade', 'brigadeId', 'boecId')
-        read_only_fields = ('id', 'brigade', 'boec')
+        fields = ("id", "boec", "year", "brigade", "brigadeId", "boecId")
+        read_only_fields = ("id", "brigade", "boec")
 
 
 class BoecSerializer(serializers.ModelSerializer):
     """serializer for boec objects"""
 
-    fullName = serializers.SerializerMethodField('get_full_name')
+    fullName = serializers.SerializerMethodField("get_full_name")
 
     def get_full_name(self, obj):
         return f"{obj.lastName} {obj.firstName} {obj.middleName}"
 
     class Meta:
         model = Boec
-        fields = ('id', 'firstName', 'lastName',
-                  'middleName', 'DOB', 'fullName')
-        read_only_fields = ('id', 'fullName',)
+        fields = ("id", "firstName", "lastName", "middleName", "DOB", "fullName")
+        read_only_fields = (
+            "id",
+            "fullName",
+        )
 
 
 class BrigadeSerializer(serializers.ModelSerializer):
     """serializer for brigade objects"""
-    boec_count = serializers.SerializerMethodField('get_boec_count')
+
+    boec_count = serializers.SerializerMethodField("get_boec_count")
     # past_seasons = serializers.SerializerMethodField('get_past_seasons')
 
     def get_boec_count(self, obj):
@@ -110,45 +109,53 @@ class BrigadeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Brigade
-        fields = ('id', 'title', 'shtab', 'area',
-                  'DOB', 'boec_count')
-        read_only_fields = ('id', 'boec_count')
+        fields = ("id", "title", "shtab", "area", "DOB", "boec_count")
+        read_only_fields = ("id", "boec_count")
 
 
 class AreaSerializer(serializers.ModelSerializer):
     """serializer for area objects"""
 
-    brigades = serializers.SerializerMethodField('get_brigades')
+    brigades = serializers.SerializerMethodField("get_brigades")
 
     def get_brigades(self, obj):
-        queryset = obj.brigades.order_by('title')
+        queryset = obj.brigades.order_by("title")
         serializer = BrigadeShortSerializer(
-            queryset,  many=True, read_only=True, context={'request': self.context['request']}
+            queryset,
+            many=True,
+            read_only=True,
+            context={"request": self.context["request"]},
         )
         return serializer.data
 
     class Meta:
         model = Area
-        fields = ('id', 'title', 'shortTitle', 'brigades')
-        read_only_fields = ('id',)
+        fields = ("id", "title", "shortTitle", "brigades")
+        read_only_fields = ("id",)
 
 
 class PositionSerializer(serializers.ModelSerializer):
-    """ serializer for the position objects """
+    """serializer for the position objects"""
 
     boec = BoecInfoSerializer(required=False)
     brigade = BrigadeShortSerializer(required=False)
     boecId = serializers.PrimaryKeyRelatedField(
-        queryset=Boec.objects.all(),
-        source='boec'
+        queryset=Boec.objects.all(), source="boec"
     )
 
     class Meta:
         model = Position
-        fields = ('id', 'position', 'boec', 'brigade',
-                  'shtab', 'fromDate', 'toDate', 'boecId',
-                  )
-        read_only_fields = ('id', 'boec')
+        fields = (
+            "id",
+            "position",
+            "boec",
+            "brigade",
+            "shtab",
+            "fromDate",
+            "toDate",
+            "boecId",
+        )
+        read_only_fields = ("id", "boec")
 
 
 class ConferenceSerializer(serializers.ModelSerializer):
@@ -156,5 +163,5 @@ class ConferenceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Conference
-        fields = ('id', 'brigades', 'date', 'shtabs')
-        read_only_fields = ('id', )
+        fields = ("id", "brigades", "date", "shtabs")
+        read_only_fields = ("id",)

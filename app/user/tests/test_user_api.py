@@ -1,12 +1,11 @@
-from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.test import TestCase
 from django.urls import reverse
-
-from rest_framework.test import APIClient
 from rest_framework import status
+from rest_framework.test import APIClient
 
-CREATE_USER_URL = reverse('user:create')
-ME_URL = reverse('user:me')
+CREATE_USER_URL = reverse("user:create")
+ME_URL = reverse("user:me")
 
 
 def create_user(**params):
@@ -21,10 +20,7 @@ class PublicUserApiTests(TestCase):
 
     def test_create_valid_user_success(self):
         """test creating user with valid payload is successful"""
-        payload = {
-            'vkId': 'test',
-            'name': 'test name'
-        }
+        payload = {"vkId": "test", "name": "test name"}
         res = self.client.post(CREATE_USER_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -34,7 +30,7 @@ class PublicUserApiTests(TestCase):
     def test_user_exists(self):
         """test creating user that already exists"""
         payload = {
-            'vkId': 'test',
+            "vkId": "test",
         }
         create_user(**payload)
 
@@ -53,10 +49,7 @@ class PrivateUserApiTest(TestCase):
     """test api request thay require auth"""
 
     def setUp(self):
-        self.user = create_user(
-            vkId="test",
-            name='name'
-        )
+        self.user = create_user(vkId="test", name="name")
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
@@ -65,27 +58,25 @@ class PrivateUserApiTest(TestCase):
         res = self.client.get(ME_URL)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, {
-            'id': self.user.id,
-            'vkId': self.user.vkId,
-            'name': self.user.name
-        })
+        self.assertEqual(
+            res.data,
+            {"id": self.user.id, "vkId": self.user.vkId, "name": self.user.name},
+        )
 
     def test_post_me_not_allowed(self):
         """test that post is not allowed on the me url"""
         res = self.client.post(ME_URL, {})
 
-        self.assertEqual(
-            res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_update_user_profile(self):
         """test updating the user profile for authenticated user"""
         payload = {
-            "name": 'name',
+            "name": "name",
         }
         res = self.client.patch(ME_URL, payload)
 
         self.user.refresh_from_db()
-        self.assertEqual(self.user.name, payload['name'])
+        self.assertEqual(self.user.name, payload["name"])
         self.assertTrue(not self.user.has_usable_password())
         self.assertEqual(res.status_code, status.HTTP_200_OK)

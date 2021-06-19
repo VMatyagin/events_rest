@@ -1,22 +1,24 @@
 import os
 import uuid
 
-from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
-                                        PermissionsMixin)
+import reversion
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
 from django.db import models
 from django.utils import timezone
-from rest_framework.exceptions import ValidationError
-import reversion
-
 from django.utils.translation import ugettext_lazy as _
+from rest_framework.exceptions import ValidationError
 
 
 def recipe_image_file_path(instance, filename):
     """Generate file path for new recipe image"""
-    ext = filename.split('.')[-1]
-    filename = f'{uuid.uuid4()}.{ext}'
+    ext = filename.split(".")[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
 
-    return os.path.join('uploads/recipe/', filename)
+    return os.path.join("uploads/recipe/", filename)
 
 
 class AutoDateTimeField(models.DateTimeField):
@@ -25,11 +27,10 @@ class AutoDateTimeField(models.DateTimeField):
 
 
 class UserManager(BaseUserManager):
-
     def create_user(self, vkId, password=None, **extra_fields):
         """creates and saves a new user"""
         if not vkId:
-            raise ValueError('Users must have an vkId')
+            raise ValueError("Users must have an vkId")
         user = self.model(vkId=vkId, **extra_fields)
         if password:
             user.set_password(password)
@@ -42,7 +43,7 @@ class UserManager(BaseUserManager):
     def create_superuser(self, vkId, password=None):
         """creates and save a new super user"""
         if not password:
-            raise ValueError('SuperUsers must have password')
+            raise ValueError("SuperUsers must have password")
         user = self.create_user(vkId=vkId, password=password)
         user.is_staff = True
         user.is_superuser = True
@@ -55,6 +56,7 @@ class UserManager(BaseUserManager):
 @reversion.register()
 class User(AbstractBaseUser, PermissionsMixin):
     """custom user model that support using id instead of username"""
+
     vkId = models.IntegerField(unique=True)
 
     name = models.CharField(max_length=255)
@@ -66,7 +68,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'vkId'
+    USERNAME_FIELD = "vkId"
 
     def __str__(self):
         return f"{self.vkId}"
@@ -77,8 +79,8 @@ class Shtab(models.Model):
     """Shtab object"""
 
     class Meta:
-        verbose_name = 'Штаб'
-        verbose_name_plural = 'Штабы'
+        verbose_name = "Штаб"
+        verbose_name_plural = "Штабы"
 
     title = models.CharField(max_length=255)
     created_at = models.DateField(default=timezone.now)
@@ -93,8 +95,8 @@ class Area(models.Model):
     """Area (direction) object"""
 
     class Meta:
-        verbose_name = 'Направления'
-        verbose_name_plural = 'Направления'
+        verbose_name = "Направления"
+        verbose_name_plural = "Направления"
 
     title = models.CharField(max_length=255)
     shortTitle = models.CharField(max_length=10)
@@ -114,8 +116,8 @@ class Boec(models.Model):
     """Boec object"""
 
     class Meta:
-        verbose_name = 'Боец'
-        verbose_name_plural = 'Бойцы'
+        verbose_name = "Боец"
+        verbose_name_plural = "Бойцы"
 
     firstName = models.CharField(max_length=255)
     lastName = models.CharField(max_length=255)
@@ -123,8 +125,7 @@ class Boec(models.Model):
     DOB = models.DateField(null=True, blank=True)
     created_at = models.DateField(default=timezone.now)
     updated_at = AutoDateTimeField(default=timezone.now)
-    vkId = models.IntegerField(
-        verbose_name='VK id', blank=True, null=True, unique=True)
+    vkId = models.IntegerField(verbose_name="VK id", blank=True, null=True, unique=True)
 
     def __str__(self):
         return f"{self.lastName} {self.firstName} {self.middleName}"
@@ -135,14 +136,13 @@ class Brigade(models.Model):
     """Brigade object"""
 
     class Meta:
-        verbose_name = 'Отряд'
-        verbose_name_plural = 'Отряды'
+        verbose_name = "Отряд"
+        verbose_name_plural = "Отряды"
 
     title = models.CharField(max_length=255)
-    area = models.ForeignKey(
-        Area, on_delete=models.RESTRICT, related_name='brigades')
+    area = models.ForeignKey(Area, on_delete=models.RESTRICT, related_name="brigades")
     shtab = models.ForeignKey(Shtab, on_delete=models.RESTRICT)
-    boec = models.ManyToManyField(Boec, blank=True, related_name='brigades')
+    boec = models.ManyToManyField(Boec, blank=True, related_name="brigades")
     DOB = models.DateTimeField(null=True, blank=True)
     created_at = models.DateField(default=timezone.now)
     updated_at = AutoDateTimeField(default=timezone.now)
@@ -156,68 +156,46 @@ class Event(models.Model):
     """Event model"""
 
     class Meta:
-        verbose_name = 'Мероприятие'
-        verbose_name_plural = 'Мероприятия'
+        verbose_name = "Мероприятие"
+        verbose_name_plural = "Мероприятия"
 
     class EventStatus(models.IntegerChoices):
-        JUST_CREATED = 0, _('Мероприятие создано')
-        PASSED = 1, _('Мероприятие прошло')
-        NOT_PASSED = 2,  _('Мероприятие не прошло')
+        JUST_CREATED = 0, _("Мероприятие создано")
+        PASSED = 1, _("Мероприятие прошло")
+        NOT_PASSED = 2, _("Мероприятие не прошло")
 
     class EventWorth(models.IntegerChoices):
-        UNSET = 0, _('Не учитывается')
-        ART = 1, _('Творчество')
-        SPORT = 2, _('Спорт')
-        VOLONTEER = 3, _('Волонтерство')
-        CITY = 4, _('Городское')
+        UNSET = 0, _("Не учитывается")
+        ART = 1, _("Творчество")
+        SPORT = 2, _("Спорт")
+        VOLONTEER = 3, _("Волонтерство")
+        CITY = 4, _("Городское")
 
     status = models.IntegerField(
-        choices=EventStatus.choices, default=EventStatus.JUST_CREATED,
-        verbose_name='Статус мероприятия'
+        choices=EventStatus.choices,
+        default=EventStatus.JUST_CREATED,
+        verbose_name="Статус мероприятия",
     )
     worth = models.IntegerField(
-        choices=EventWorth.choices, default=EventWorth.UNSET,
-        verbose_name='Ценность блоков',
+        choices=EventWorth.choices,
+        default=EventWorth.UNSET,
+        verbose_name="Ценность блоков",
     )
-    title = models.CharField(
-        max_length=255,
-        verbose_name='Название'
-    )
+    title = models.CharField(max_length=255, verbose_name="Название")
     description = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        verbose_name='Описание'
+        max_length=255, blank=True, null=True, verbose_name="Описание"
     )
     location = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-        verbose_name='Место проведение'
+        max_length=255, blank=True, null=True, verbose_name="Место проведение"
     )
     shtab = models.ForeignKey(
-        Shtab,
-        on_delete=models.SET_NULL,
-        null=True,
-        verbose_name='Штаб'
+        Shtab, on_delete=models.SET_NULL, null=True, verbose_name="Штаб"
     )
-    startDate = models.DateTimeField(
-        verbose_name='Дата начала'
-    )
-    startTime = models.TimeField(
-        null=True,
-        blank=True,
-        verbose_name='Время начала'
-    )
+    startDate = models.DateTimeField(verbose_name="Дата начала")
+    startTime = models.TimeField(null=True, blank=True, verbose_name="Время начала")
 
-    visibility = models.BooleanField(
-        default=False,
-        verbose_name='Видимость'
-    )
-    isCanonical = models.BooleanField(
-        default=False,
-        verbose_name='Каноничность'
-    )
+    visibility = models.BooleanField(default=False, verbose_name="Видимость")
+    isCanonical = models.BooleanField(default=False, verbose_name="Каноничность")
 
     def __str__(self):
         return self.title
@@ -228,15 +206,16 @@ class Season(models.Model):
     """Season model"""
 
     class Meta:
-        verbose_name = 'Выезжавший на сезон'
-        verbose_name_plural = 'Выезжавшие на сезон'
+        verbose_name = "Выезжавший на сезон"
+        verbose_name_plural = "Выезжавшие на сезон"
 
     boec = models.ForeignKey(
-        Boec, on_delete=models.CASCADE, verbose_name='ФИО',
-        related_name='seasons')
+        Boec, on_delete=models.CASCADE, verbose_name="ФИО", related_name="seasons"
+    )
     brigade = models.ForeignKey(
-        Brigade, on_delete=models.RESTRICT, verbose_name='Отряд', related_name='seasons')
-    year = models.IntegerField(verbose_name='Год выезда')
+        Brigade, on_delete=models.RESTRICT, verbose_name="Отряд", related_name="seasons"
+    )
+    year = models.IntegerField(verbose_name="Год выезда")
 
     def __str__(self):
         return f"{self.year} - {self.brigade.title} {self.boec.lastName}"
@@ -247,56 +226,59 @@ class Position(models.Model):
     """Position model"""
 
     class Meta:
-        verbose_name = 'Должность'
-        verbose_name_plural = 'Должности'
+        verbose_name = "Должность"
+        verbose_name_plural = "Должности"
 
     class PositionEnum(models.IntegerChoices):
-        WORKER = 0, _('Работник')
-        KOMENDANT = 1, _('Комендант')
-        METODIST = 2, _('Методист')
-        MASTER = 3, _('Мастер')
-        KOMISSAR = 4, _('Комиссар')
-        KOMANDIR = 5,  _('Командир')
+        WORKER = 0, _("Работник")
+        KOMENDANT = 1, _("Комендант")
+        METODIST = 2, _("Методист")
+        MASTER = 3, _("Мастер")
+        KOMISSAR = 4, _("Комиссар")
+        KOMANDIR = 5, _("Командир")
 
     position = models.IntegerField(
-        choices=PositionEnum.choices,
-        verbose_name='Должность'
+        choices=PositionEnum.choices, verbose_name="Должность"
     )
 
     boec = models.ForeignKey(
         Boec,
         on_delete=models.RESTRICT,
-        verbose_name='Боец',
-        related_name='positions',
+        verbose_name="Боец",
+        related_name="positions",
     )
 
     brigade = models.ForeignKey(
         Brigade,
         on_delete=models.RESTRICT,
-        verbose_name='Отряд',
-        related_name='positions',
+        verbose_name="Отряд",
+        related_name="positions",
         null=True,
-        blank=True
+        blank=True,
     )
     shtab = models.ForeignKey(
         Shtab,
         on_delete=models.RESTRICT,
-        verbose_name='Штаб',
-        related_name='positions',
+        verbose_name="Штаб",
+        related_name="positions",
         null=True,
-        blank=True
+        blank=True,
     )
     fromDate = models.DateTimeField(default=timezone.now)
     toDate = models.DateTimeField(null=True, blank=True)
 
     def validate(self, data):
-        if not data['brigade'] and not data['shtab']:
+        if not data["brigade"] and not data["shtab"]:
             raise ValidationError(
-                {'error': 'Even one of brigade or shtab should have a value.'})
+                {"error": "Even one of brigade or shtab should have a value."}
+            )
 
     def __str__(self):
-        additionalMsg = _('Действующий') if (not self.toDate) else ""
-        return f"{self.get_position_display()} | {self.brigade.title} | {self.boec} | {additionalMsg}"
+        additionalMsg = _("Действующий") if (not self.toDate) else ""
+        return (
+            f"{self.get_position_display()} | {self.brigade.title} | {self.boec} | "
+            f"{additionalMsg}"
+        )
 
 
 @reversion.register()
@@ -304,28 +286,32 @@ class Participant(models.Model):
     """Participant model"""
 
     class Meta:
-        verbose_name = 'Участник мероприятия'
-        verbose_name_plural = 'Участники мероприятия'
+        verbose_name = "Участник мероприятия"
+        verbose_name_plural = "Участники мероприятия"
 
     boec = models.ForeignKey(
-        Boec, on_delete=models.RESTRICT, verbose_name='Боец',
-        related_name='event_participation'
+        Boec,
+        on_delete=models.RESTRICT,
+        verbose_name="Боец",
+        related_name="event_participation",
     )
 
     event = models.ForeignKey(
-        Event, on_delete=models.RESTRICT, verbose_name='Мероприятие',
-        related_name='participant'
+        Event,
+        on_delete=models.RESTRICT,
+        verbose_name="Мероприятие",
+        related_name="participant",
     )
 
     class WorthEnum(models.IntegerChoices):
-        DEFAULT = 0, _('Участник')
-        VOLONTEER = 1, _('Волонтер')
-        ORGANIZER = 2, _('Организатор')
+        DEFAULT = 0, _("Участник")
+        VOLONTEER = 1, _("Волонтер")
+        ORGANIZER = 2, _("Организатор")
 
     worth = models.IntegerField(
         choices=WorthEnum.choices,
-        verbose_name='Статус участия',
-        default=WorthEnum.DEFAULT
+        verbose_name="Статус участия",
+        default=WorthEnum.DEFAULT,
     )
 
     def __str__(self):
@@ -337,12 +323,14 @@ class Competition(models.Model):
     """Competition  model"""
 
     class Meta:
-        verbose_name = 'Конкурс мероприятия'
-        verbose_name_plural = 'Конкурсы мероприятий'
+        verbose_name = "Конкурс мероприятия"
+        verbose_name_plural = "Конкурсы мероприятий"
 
     event = models.ForeignKey(
-        Event, on_delete=models.CASCADE, verbose_name='Мероприятие',
-        related_name='competitions'
+        Event,
+        on_delete=models.CASCADE,
+        verbose_name="Мероприятие",
+        related_name="competitions",
     )
     title = models.CharField(max_length=255)
 
@@ -355,38 +343,35 @@ class CompetitionParticipant(models.Model):
     """Competition Participant model"""
 
     class Meta:
-        verbose_name = 'Заявка на мероприятие'
-        verbose_name_plural = 'Заявки на мероприятие'
+        verbose_name = "Заявка на мероприятие"
+        verbose_name_plural = "Заявки на мероприятие"
 
     competition = models.ForeignKey(
-        Competition, on_delete=models.CASCADE, verbose_name='Конкурс',
-        related_name='competition_participation'
+        Competition,
+        on_delete=models.CASCADE,
+        verbose_name="Конкурс",
+        related_name="competition_participation",
     )
-    boec = models.ManyToManyField(
-        Boec,
-        related_name='competition_participation'
-    )
+    boec = models.ManyToManyField(Boec, related_name="competition_participation")
     # автоматические привязывается к бойцам
     brigades = models.ManyToManyField(
-        Brigade,
-        related_name='competition_participation',
-        blank=True
+        Brigade, related_name="competition_participation", blank=True
     )
 
     class WorthEnum(models.IntegerChoices):
-        DEFAULT = 0, _('Заявка')
-        INVOLVEMENT = 1, _('Участие/плей-офф')
-        WINNER = 2, _('Призовое место/номинация')
-        NOTWINNER = 3, _('Без рейтинговое(ая) призовое/номинация')
+        DEFAULT = 0, _("Заявка")
+        INVOLVEMENT = 1, _("Участие/плей-офф")
+        WINNER = 2, _("Призовое место/номинация")
+        NOTWINNER = 3, _("Без рейтинговое(ая) призовое/номинация")
 
     worth = models.IntegerField(
         choices=WorthEnum.choices,
-        verbose_name='Статус участника',
-        default=WorthEnum.DEFAULT
+        verbose_name="Статус участника",
+        default=WorthEnum.DEFAULT,
     )
 
     def __str__(self):
-        brigades_title = ''
+        brigades_title = ""
         for brigade in self.brigades.all():
             brigades_title += f"{brigade.title} | "
         return f"{brigades_title} {self.competition.title} | {self.competition.event.title}"
@@ -395,27 +380,28 @@ class CompetitionParticipant(models.Model):
 @reversion.register()
 class Nomination(models.Model):
     """Nomination model"""
+
     class Meta:
-        verbose_name = 'Номинация'
-        verbose_name_plural = 'Номинации'
+        verbose_name = "Номинация"
+        verbose_name_plural = "Номинации"
 
     title = models.CharField(max_length=255)
     competition = models.ForeignKey(
-        Competition, on_delete=models.CASCADE, verbose_name='Конкурс',
-        related_name='nominations'
+        Competition,
+        on_delete=models.CASCADE,
+        verbose_name="Конкурс",
+        related_name="nominations",
     )
 
     owner = models.ManyToManyField(
         CompetitionParticipant,
-        related_name='nomination',
+        related_name="nomination",
         blank=True,
     )
 
     isRated = models.BooleanField(default=True)
     sportPlace = models.IntegerField(
-        verbose_name='Место, если спорт',
-        blank=True,
-        null=True
+        verbose_name="Место, если спорт", blank=True, null=True
     )
 
     def __str__(self):
@@ -425,25 +411,16 @@ class Nomination(models.Model):
 @reversion.register()
 class Conference(models.Model):
     """Conference model"""
+
     class Meta:
-        verbose_name = 'Конференция'
-        verbose_name_plural = 'Конференции'
+        verbose_name = "Конференция"
+        verbose_name_plural = "Конференции"
 
-    date = models.DateTimeField(
-        verbose_name='Дата проведения'
-    )
+    date = models.DateTimeField(verbose_name="Дата проведения")
 
-    brigades = models.ManyToManyField(
-        Brigade,
-        related_name='conference',
-        blank=True
-    )
+    brigades = models.ManyToManyField(Brigade, related_name="conference", blank=True)
 
-    shtabs = models.ManyToManyField(
-        Shtab,
-        related_name='conference',
-        blank=True
-    )
+    shtabs = models.ManyToManyField(Shtab, related_name="conference", blank=True)
 
     def __str__(self):
         return f"{self.date} | {self.brigades.count()} отрядов | {self.shtabs.count()} штабов"

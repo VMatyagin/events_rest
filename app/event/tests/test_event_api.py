@@ -1,15 +1,12 @@
-from django.test import TestCase
+from core.models import Event
 from django.contrib.auth import get_user_model
+from django.test import TestCase
 from django.urls import reverse
-
+from event.serializers import EventSerializer
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Event
-
-from event.serializers import EventSerializer
-
-EVENT_URL = reverse('event:event-list')
+EVENT_URL = reverse("event:event-list")
 
 
 class PublicEventApiTests(TestCase):
@@ -29,48 +26,34 @@ class PrivateEventApiTest(TestCase):
     """test the authorized user event API"""
 
     def setUp(self):
-        self.user = get_user_model().objects.create_user(
-            'test@email.com',
-            'pass123'
-        )
+        self.user = get_user_model().objects.create_user("test@email.com", "pass123")
 
         self.client = APIClient()
         self.client.force_authenticate(self.user)
 
     def test_retrieve_event_list(self):
         """test retrieve event"""
-        Event.objects.create(
-            status=0,
-            title='test name'
-        )
-        Event.objects.create(
-            status=0,
-            title='Atest name'
-        )
+        Event.objects.create(status=0, title="test name")
+        Event.objects.create(status=0, title="Atest name")
 
         res = self.client.get(EVENT_URL)
 
-        list = Event.objects.all().order_by('-title')
+        list = Event.objects.all().order_by("-title")
         serializer = EventSerializer(list, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data['items'], serializer.data)
+        self.assertEqual(res.data["items"], serializer.data)
 
     def test_create_event_successful(self):
         """test creating a new event"""
-        payload = {
-            "status": 0,
-            "title": 'namw'
-        }
+        payload = {"status": 0, "title": "namw"}
         self.client.post(EVENT_URL, payload)
-        exists = Event.objects.filter(
-            title=payload['title']
-        ).exists()
+        exists = Event.objects.filter(title=payload["title"]).exists()
         self.assertTrue(exists)
 
     def test_create_event_invalid(self):
         """test creating a new event with invalid payload"""
-        payload = {'title': ''}
+        payload = {"title": ""}
         res = self.client.post(EVENT_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

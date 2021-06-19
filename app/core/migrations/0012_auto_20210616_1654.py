@@ -6,27 +6,34 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0011_auto_20210616_1323'),
+        ("core", "0011_auto_20210616_1323"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='nomination',
-            name='isRated',
+            model_name="nomination",
+            name="isRated",
             field=models.BooleanField(default=True),
         ),
         migrations.AddField(
-            model_name='nomination',
-            name='sportPlace',
-            field=models.IntegerField(blank=True, choices=[(1, 'Первое'), (2, 'Второе'), (3, 'Третье')], null=True, verbose_name='Место, если спорт'),
+            model_name="nomination",
+            name="sportPlace",
+            field=models.IntegerField(
+                blank=True,
+                choices=[(1, "Первое"), (2, "Второе"), (3, "Третье")],
+                null=True,
+                verbose_name="Место, если спорт",
+            ),
         ),
         migrations.RemoveField(
-            model_name='nomination',
-            name='owner',
+            model_name="nomination",
+            name="owner",
         ),
         migrations.AddField(
-            model_name='nomination',
-            name='owner',
-            field=models.ManyToManyField(blank=True, related_name='nomination', to='core.CompetitionParticipant'),
+            model_name="nomination",
+            name="owner",
+            field=models.ManyToManyField(
+                blank=True, related_name="nomination", to="core.CompetitionParticipant"
+            ),
         ),
     ]
