@@ -132,9 +132,7 @@ class EventCompetitionRetrieveUpdateDestroy(
 
     serializer_class = serializers.CompetitionSerializer
     authentication_classes = (VKAuthentication,)
-    permission_classes = [
-        IsAuthenticated,
-    ]
+    permission_classes = [IsAuthenticated]
     queryset = models.Competition.objects.all()
 
 
@@ -143,9 +141,7 @@ class EventCompetitionParticipants(RevisionMixin, viewsets.ModelViewSet):
 
     serializer_class = serializers.CompetitionParticipantsSerializer
     authentication_classes = (VKAuthentication,)
-    permission_classes = [
-        IsAuthenticated,
-    ]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = models.CompetitionParticipant.objects.all()
@@ -182,9 +178,7 @@ class NominationView(RevisionMixin, viewsets.ModelViewSet):
 
     serializer_class = serializers.NominationSerializer
     authentication_classes = (VKAuthentication,)
-    permission_classes = [
-        IsAuthenticated,
-    ]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = models.Nomination.objects.all()

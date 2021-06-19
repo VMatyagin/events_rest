@@ -22,9 +22,7 @@ def sample_area(title="Second", shortTitle="2"):
 def sample_boec(firstName="Name", lastName="LastName", middleName=""):
     """Create and return a sample boec"""
     return Boec.objects.create(
-        firstName=firstName,
-        lastName=lastName,
-        middleName=middleName,
+        firstName=firstName, lastName=lastName, middleName=middleName
     )
 
 

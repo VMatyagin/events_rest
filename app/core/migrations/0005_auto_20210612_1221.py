@@ -6,9 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("core", "0004_auto_20210611_2111"),
-    ]
+    dependencies = [("core", "0004_auto_20210611_2111")]
 
     operations = [
         migrations.CreateModel(
@@ -52,9 +50,7 @@ class Migration(migrations.Migration):
                 blank=True, max_length=255, null=True, verbose_name="Описание"
             ),
         ),
-        migrations.DeleteModel(
-            name="EventOrder",
-        ),
+        migrations.DeleteModel(name="EventOrder"),
         migrations.AddField(
             model_name="participant",
             name="event",

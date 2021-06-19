@@ -5,15 +5,10 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("core", "0012_auto_20210616_1654"),
-    ]
+    dependencies = [("core", "0012_auto_20210616_1654")]
 
     operations = [
-        migrations.RemoveField(
-            model_name="brigade",
-            name="status",
-        ),
+        migrations.RemoveField(model_name="brigade", name="status"),
         migrations.AlterField(
             model_name="nomination",
             name="sportPlace",

@@ -198,18 +198,10 @@ class EventReportGenerator(ReportGenerator):
         cell.set_text_format("fontSize", 14)
         cell.set_text_format("bold", True)
         cell.borders = {
-            "top": {
-                "style": "SOLID_THICK",
-            },
-            "bottom": {
-                "style": "SOLID_THICK",
-            },
-            "left": {
-                "style": "SOLID_THICK",
-            },
-            "right": {
-                "style": "SOLID_THICK",
-            },
+            "top": {"style": "SOLID_THICK"},
+            "bottom": {"style": "SOLID_THICK"},
+            "left": {"style": "SOLID_THICK"},
+            "right": {"style": "SOLID_THICK"},
         }
         cell.color = (0.937, 0.937, 0.937, 1)
 
@@ -220,18 +212,10 @@ class EventReportGenerator(ReportGenerator):
         cell.set_text_format("fontFamily", "Roboto")
 
         cell.borders = {
-            "top": {
-                "style": "SOLID",
-            },
-            "bottom": {
-                "style": "SOLID",
-            },
-            "left": {
-                "style": "SOLID",
-            },
-            "right": {
-                "style": "SOLID",
-            },
+            "top": {"style": "SOLID"},
+            "bottom": {"style": "SOLID"},
+            "left": {"style": "SOLID"},
+            "right": {"style": "SOLID"},
         }
         # color is required for border
         cell.color = (1, 1, 1, 1)

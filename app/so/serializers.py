@@ -75,10 +75,7 @@ class BoecSerializer(serializers.ModelSerializer):
     class Meta:
         model = Boec
         fields = ("id", "firstName", "lastName", "middleName", "DOB", "fullName")
-        read_only_fields = (
-            "id",
-            "fullName",
-        )
+        read_only_fields = ("id", "fullName")
 
 
 class BrigadeSerializer(serializers.ModelSerializer):

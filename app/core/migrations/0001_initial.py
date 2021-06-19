@@ -10,9 +10,7 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-        ("auth", "0012_alter_user_first_name_max_length"),
-    ]
+    dependencies = [("auth", "0012_alter_user_first_name_max_length")]
 
     operations = [
         migrations.CreateModel(
@@ -68,10 +66,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={
-                "verbose_name": "Боец",
-                "verbose_name_plural": "Бойцы",
-            },
+            options={"verbose_name": "Боец", "verbose_name_plural": "Бойцы"},
         ),
         migrations.CreateModel(
             name="Brigade",
@@ -108,10 +103,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={
-                "verbose_name": "Отряд",
-                "verbose_name_plural": "Отряды",
-            },
+            options={"verbose_name": "Отряд", "verbose_name_plural": "Отряды"},
         ),
         migrations.CreateModel(
             name="Event",
@@ -213,10 +205,7 @@ class Migration(migrations.Migration):
                     core.models.AutoDateTimeField(default=django.utils.timezone.now),
                 ),
             ],
-            options={
-                "verbose_name": "Штаб",
-                "verbose_name_plural": "Штабы",
-            },
+            options={"verbose_name": "Штаб", "verbose_name_plural": "Штабы"},
         ),
         migrations.CreateModel(
             name="Season",
@@ -315,10 +304,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={
-                "verbose_name": "Должность",
-                "verbose_name_plural": "Должности",
-            },
+            options={"verbose_name": "Должность", "verbose_name_plural": "Должности"},
         ),
         migrations.CreateModel(
             name="EventOrder",
@@ -475,8 +461,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={
-                "abstract": False,
-            },
+            options={"abstract": False},
         ),
     ]

@@ -55,8 +55,7 @@ class ParticipantSerializer(DynamicFieldsModelSerializer):
 
     boec = BoecInfoSerializer(required=False)
     boecId = serializers.PrimaryKeyRelatedField(
-        queryset=Boec.objects.all(),
-        source="boec",
+        queryset=Boec.objects.all(), source="boec"
     )
 
     def validate_boecId(self, value):
@@ -153,9 +152,7 @@ class NominationSerializer(DynamicFieldsModelSerializer):
         model = Nomination
         fields = ("id", "competition", "title", "owner", "isRated", "sportPlace")
         read_only_fields = ("id",)
-        extra_kwargs = {
-            "competition": {"required": False},
-        }
+        extra_kwargs = {"competition": {"required": False}}
 
 
 class CompetitionParticipantsSerializer(DynamicFieldsModelSerializer):

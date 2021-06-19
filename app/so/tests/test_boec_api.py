@@ -34,19 +34,13 @@ class PrivateBoecApiTest(TestCase):
     def test_retrieve_boec_list(self):
         """test retrieve boec"""
         Boec.objects.create(
-            firstName="firstName",
-            lastName="lastName",
-            middleName="middleName",
+            firstName="firstName", lastName="lastName", middleName="middleName"
         )
         Boec.objects.create(
-            firstName="YfirstName",
-            lastName="lastName",
-            middleName="middleName",
+            firstName="YfirstName", lastName="lastName", middleName="middleName"
         )
         Boec.objects.create(
-            firstName="AfirstName",
-            lastName="lastName",
-            middleName="middleName",
+            firstName="AfirstName", lastName="lastName", middleName="middleName"
         )
 
         res = self.client.get(BOEC_URL)

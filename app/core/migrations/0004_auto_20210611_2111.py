@@ -5,9 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("core", "0003_auto_20210611_2110"),
-    ]
+    dependencies = [("core", "0003_auto_20210611_2110")]
 
     operations = [
         migrations.AlterField(
@@ -16,5 +14,5 @@ class Migration(migrations.Migration):
             field=models.CharField(
                 blank=True, max_length=255, null=True, verbose_name="Место проведение"
             ),
-        ),
+        )
     ]

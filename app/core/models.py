@@ -2,7 +2,11 @@ import os
 import uuid
 
 import reversion
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -238,10 +242,7 @@ class Position(models.Model):
     )
 
     boec = models.ForeignKey(
-        Boec,
-        on_delete=models.RESTRICT,
-        verbose_name="Боец",
-        related_name="positions",
+        Boec, on_delete=models.RESTRICT, verbose_name="Боец", related_name="positions"
     )
 
     brigade = models.ForeignKey(
@@ -390,9 +391,7 @@ class Nomination(models.Model):
     )
 
     owner = models.ManyToManyField(
-        CompetitionParticipant,
-        related_name="nomination",
-        blank=True,
+        CompetitionParticipant, related_name="nomination", blank=True
     )
 
     isRated = models.BooleanField(default=True)

@@ -6,19 +6,11 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("core", "0005_auto_20210612_1221"),
-    ]
+    dependencies = [("core", "0005_auto_20210612_1221")]
 
     operations = [
-        migrations.RemoveField(
-            model_name="event",
-            name="organizer",
-        ),
-        migrations.RemoveField(
-            model_name="event",
-            name="volonteer",
-        ),
+        migrations.RemoveField(model_name="event", name="organizer"),
+        migrations.RemoveField(model_name="event", name="volonteer"),
         migrations.AlterField(
             model_name="event",
             name="worth",
@@ -66,10 +58,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={
-                "verbose_name": "Номинация",
-                "verbose_name_plural": "Номинации",
-            },
+            options={"verbose_name": "Номинация", "verbose_name_plural": "Номинации"},
         ),
         migrations.CreateModel(
             name="BrigadeParticipant",

@@ -29,9 +29,7 @@ class PublicUserApiTests(TestCase):
 
     def test_user_exists(self):
         """test creating user that already exists"""
-        payload = {
-            "vkId": "test",
-        }
+        payload = {"vkId": "test"}
         create_user(**payload)
 
         res = self.client.post(CREATE_USER_URL, payload)
@@ -71,9 +69,7 @@ class PrivateUserApiTest(TestCase):
 
     def test_update_user_profile(self):
         """test updating the user profile for authenticated user"""
-        payload = {
-            "name": "name",
-        }
+        payload = {"name": "name"}
         res = self.client.patch(ME_URL, payload)
 
         self.user.refresh_from_db()

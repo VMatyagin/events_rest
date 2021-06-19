@@ -5,9 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("core", "0011_auto_20210616_1323"),
-    ]
+    dependencies = [("core", "0011_auto_20210616_1323")]
 
     operations = [
         migrations.AddField(
@@ -25,10 +23,7 @@ class Migration(migrations.Migration):
                 verbose_name="Место, если спорт",
             ),
         ),
-        migrations.RemoveField(
-            model_name="nomination",
-            name="owner",
-        ),
+        migrations.RemoveField(model_name="nomination", name="owner"),
         migrations.AddField(
             model_name="nomination",
             name="owner",

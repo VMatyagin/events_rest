@@ -72,9 +72,9 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-            ],
+            ]
         },
-    },
+    }
 ]
 
 REST_FRAMEWORK = {
@@ -147,7 +147,5 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "https://vk-mini-so.vercel.app",
 ]
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://\w+\.ngrok\.io$",
-]
+CORS_ALLOWED_ORIGIN_REGEXES = [r"^https://\w+\.ngrok\.io$"]
 ADD_REVERSION_ADMIN = True

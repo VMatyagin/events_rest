@@ -12,9 +12,7 @@ class ModelTests(TestCase):
     def test_create_user_witht_vkId_sussessfull(self):
         """Test creating a new user with an vkId is successfulll"""
         vkId = "test"
-        user = get_user_model().objects.create_user(
-            vkId=vkId,
-        )
+        user = get_user_model().objects.create_user(vkId=vkId)
 
         self.assertEqual(user.vkId, vkId)
         self.assertTrue(not user.has_usable_password())
@@ -50,9 +48,7 @@ class ModelTests(TestCase):
     def test_boec_str(self):
         """test the boec's represenation"""
         boec = models.Boec.objects.create(
-            firstName="firstName",
-            lastName="lastName",
-            middleName="middleName",
+            firstName="firstName", lastName="lastName", middleName="middleName"
         )
 
         self.assertEqual(
@@ -79,9 +75,7 @@ class ModelTests(TestCase):
         brigade = models.Brigade.objects.create(title="name", area=area, shtab=shtab)
 
         boec = models.Boec.objects.create(
-            firstName="firstName",
-            lastName="lastName",
-            middleName="middleName",
+            firstName="firstName", lastName="lastName", middleName="middleName"
         )
 
         season = models.Season.objects.create(boec=boec, brigade=brigade, year=2020)

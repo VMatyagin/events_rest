@@ -6,9 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("core", "0007_auto_20210615_1459"),
-    ]
+    dependencies = [("core", "0007_auto_20210615_1459")]
 
     operations = [
         migrations.CreateModel(
@@ -86,10 +84,7 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "Заявки на мероприятие",
             },
         ),
-        migrations.RemoveField(
-            model_name="nomination",
-            name="event",
-        ),
+        migrations.RemoveField(model_name="nomination", name="event"),
         migrations.AlterField(
             model_name="participant",
             name="boec",
@@ -109,9 +104,7 @@ class Migration(migrations.Migration):
                 verbose_name="Статус участия",
             ),
         ),
-        migrations.DeleteModel(
-            name="BrigadeParticipant",
-        ),
+        migrations.DeleteModel(name="BrigadeParticipant"),
         migrations.AddField(
             model_name="nomination",
             name="competition",

@@ -65,16 +65,7 @@ class UserAdmin(CompareVersionAdmin, BaseUserAdmin):
     fieldsets = (
         (None, {"fields": ("vkId",)}),
         (_("Personal Info"), {"fields": ("name",)}),
-        (
-            _("Permissions"),
-            {
-                "fields": (
-                    "is_active",
-                    "is_staff",
-                    "is_superuser",
-                )
-            },
-        ),
+        (_("Permissions"), {"fields": ("is_active", "is_staff", "is_superuser")}),
         (_("Important dates"), {"fields": ("last_login",)}),
     )
     add_fieldsets = ((None, {"classes": ("wide",), "fields": ("vkId",)}),)
@@ -113,10 +104,7 @@ class ActivePositionFilter(admin.SimpleListFilter):
     parameter_name = "toDate"
 
     def lookups(self, request, model_admin):
-        return (
-            ("0", _("Действующий")),
-            ("1", _("Не действующий")),
-        )
+        return (("0", _("Действующий")), ("1", _("Не действующий")))
 
     def queryset(self, request, queryset):
         if self.value() == "0":
