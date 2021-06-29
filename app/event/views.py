@@ -3,12 +3,12 @@ from threading import Thread
 
 from core import models
 from core.authentication import VKAuthentication
-from core.utils.sheets import EventReportGenerator
+from core.utils.sheets import EventReportGenerator, EventsRatingGenerator
 from django.core.exceptions import ValidationError
 from event import serializers
 from rest_framework import filters, mixins, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from reversion.views import RevisionMixin
 
@@ -49,7 +49,7 @@ class EventViewSet(
     @action(
         methods=["post"],
         detail=True,
-        permission_classes=(IsAuthenticated,),
+        permission_classes=(IsAuthenticated, IsAdminUser),
         url_path="report",
         url_name="report",
         authentication_classes=(VKAuthentication,),
@@ -58,6 +58,20 @@ class EventViewSet(
         event = models.Event.objects.get(id=pk)
         reporter = EventReportGenerator("1s_NVTmYxG5GloDaOOw4d7eh7P_zAcobTmIRseYHsg3g")
         Thread(target=reporter.create, args=[event]).start()
+
+        return Response({})
+
+    @action(
+        methods=["post"],
+        detail=False,
+        permission_classes=(IsAuthenticated, IsAdminUser),
+        url_path="rating",
+        url_name="rating",
+        authentication_classes=(VKAuthentication,),
+    )
+    def generateRating(self, request):
+        reporter = EventsRatingGenerator("1s_NVTmYxG5GloDaOOw4d7eh7P_zAcobTmIRseYHsg3g")
+        Thread(target=reporter.create).start()
 
         return Response({})
 

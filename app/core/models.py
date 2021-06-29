@@ -151,6 +151,14 @@ class Brigade(models.Model):
         return self.title
 
 
+class EventWorth(models.IntegerChoices):
+    UNSET = 0, _("Не учитывается")
+    ART = 1, _("Творчество")
+    SPORT = 2, _("Спорт")
+    VOLONTEER = 3, _("Волонтерство")
+    CITY = 4, _("Городское")
+
+
 @reversion.register()
 class Event(models.Model):
     """Event model"""
@@ -163,13 +171,6 @@ class Event(models.Model):
         JUST_CREATED = 0, _("Мероприятие создано")
         PASSED = 1, _("Мероприятие прошло")
         NOT_PASSED = 2, _("Мероприятие не прошло")
-
-    class EventWorth(models.IntegerChoices):
-        UNSET = 0, _("Не учитывается")
-        ART = 1, _("Творчество")
-        SPORT = 2, _("Спорт")
-        VOLONTEER = 3, _("Волонтерство")
-        CITY = 4, _("Городское")
 
     status = models.IntegerField(
         choices=EventStatus.choices,
