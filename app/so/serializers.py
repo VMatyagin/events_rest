@@ -78,14 +78,10 @@ class BoecSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "fullName")
 
 
-class BrigadeSerializer(serializers.ModelSerializer):
+class BrigadeSerializer(DynamicFieldsModelSerializer):
     """serializer for brigade objects"""
 
-    boec_count = serializers.SerializerMethodField("get_boec_count")
     # past_seasons = serializers.SerializerMethodField('get_past_seasons')
-
-    def get_boec_count(self, obj):
-        return obj.boec.count()
 
     shtab = ShtabSerializer(read_only=True)
     # def get_past_seasons(self, obj):
@@ -106,8 +102,8 @@ class BrigadeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Brigade
-        fields = ("id", "title", "shtab", "area", "DOB", "boec_count")
-        read_only_fields = ("id", "boec_count")
+        fields = ("id", "title", "shtab", "area", "DOB")
+        read_only_fields = ("id",)
 
 
 class AreaSerializer(serializers.ModelSerializer):

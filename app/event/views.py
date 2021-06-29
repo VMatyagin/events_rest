@@ -214,6 +214,7 @@ class NominationView(RevisionMixin, viewsets.ModelViewSet):
                 },
                 code="validation",
             )
+        logger.error(serializer.data)
         competitionId = self.kwargs["competition_pk"]
         competition = models.Competition.objects.get(id=competitionId)
         serializer.save(competition=competition)

@@ -1,4 +1,5 @@
 import logging
+from collections import OrderedDict
 
 from core.models import (
     Boec,
@@ -14,7 +15,12 @@ from core.models import (
 from core.serializers import DynamicFieldsModelSerializer
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
-from so.serializers import BoecInfoSerializer, BrigadeShortSerializer, ShtabSerializer
+from so.serializers import (
+    BoecInfoSerializer,
+    BrigadeSerializer,
+    BrigadeShortSerializer,
+    ShtabSerializer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -168,25 +174,30 @@ class CompetitionParticipantsSerializer(DynamicFieldsModelSerializer):
         return super().validate(attrs)
 
     def create(self, validated_data):
-        if "brigades" in validated_data:
-            del validated_data["brigades"]
 
+        if "brigades" in validated_data:
+            brigades_list = validated_data.pop("brigades")
         if "boec" in validated_data:
             boec_list = validated_data.pop("boec")
-        instance = CompetitionParticipant.objects.create(**validated_data)
 
+        instance = CompetitionParticipant.objects.create(**validated_data)
         if boec_list:
             instance.boec.set(boec_list)
+            if "brigades" not in validated_data:
+                brigade_list = set()
+                for boec in boec_list:
+                    boec_last_season = (
+                        # getting the last boec's Season
+                        Season.objects.filter(boec=boec)
+                        .order_by("year")
+                        .last()
+                    )
 
-            brigade_list = set()
-            for boec in boec_list:
+                    brigade_list.add(boec_last_season.brigade)
+                instance.brigades.set(brigade_list)
+        if brigades_list:
+            instance.brigades.set(brigades_list)
 
-                boec_last_season = (
-                    Season.objects.filter(boec=boec).order_by("year").first()
-                )
-
-                brigade_list.add(boec_last_season.brigade)
-            instance.brigades.set(brigade_list)
         return instance
 
     def update(self, instance, validated_data):
@@ -221,18 +232,30 @@ class CompetitionParticipantsSerializer(DynamicFieldsModelSerializer):
         representation = super(
             CompetitionParticipantsSerializer, self
         ).to_representation(instance)
-
         # восстановить, если понадобятся ФИО
         # representation['boec'] = BoecInfoSerializer(
         #     instance.boec.all(), many=True).data
         return representation
+
+    brigadesIds = serializers.PrimaryKeyRelatedField(
+        queryset=Brigade.objects.all(), source="brigades", many=True, required=False
+    )
 
     brigades = BrigadeShortSerializer(many=True, read_only=True)
     nomination = NominationSerializer(many=True, read_only=True, fields=("id", "title"))
 
     class Meta:
         model = CompetitionParticipant
-        fields = ("id", "competition", "boec", "worth", "brigades", "nomination")
+        fields = (
+            "id",
+            "competition",
+            "boec",
+            "worth",
+            "brigades",
+            "nomination",
+            "brigades",
+            "brigadesIds",
+        )
         read_only_fields = ("id", "brigades")
         extra_kwargs = {
             "competition": {"required": False},
