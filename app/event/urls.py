@@ -36,6 +36,8 @@ event_participants_router.register(
     r"nominations", views.NominationView, basename="competition-nominations"
 )
 
+router.register(r"tickets", views.TicketViewSet, basename="tickets")
+
 app_name = "event"
 
 urlpatterns = [

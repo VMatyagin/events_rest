@@ -57,7 +57,7 @@ def lint(session):
         "flake8-comprehensions",
         "flake8-django",
         "flake8-simplify",
-        "flake8-cognitive-complexity",
+        # "flake8-cognitive-complexity",
     )
     session.run("flake8", *args)
 

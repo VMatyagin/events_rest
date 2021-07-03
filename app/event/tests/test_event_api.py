@@ -1,3 +1,5 @@
+import uuid
+
 from core.models import Event
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -13,20 +15,28 @@ class PublicEventApiTests(TestCase):
     """test the publicly available event api"""
 
     def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            f"{uuid.uuid4()}@email.com", "pass123"
+        )
         self.client = APIClient()
 
     def test_login_required(self):
         """test that login is required for retrieving event's list"""
         res = self.client.get(EVENT_URL)
-
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.client.force_authenticate(self.user)
+        res = self.client.get(EVENT_URL)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
 
 
 class PrivateEventApiTest(TestCase):
     """test the authorized user event API"""
 
     def setUp(self):
-        self.user = get_user_model().objects.create_user("test@email.com", "pass123")
+        self.user = get_user_model().objects.create_user(
+            f"{uuid.uuid4()}@email.com", "pass123"
+        )
 
         self.client = APIClient()
         self.client.force_authenticate(self.user)

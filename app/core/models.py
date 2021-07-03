@@ -209,6 +209,10 @@ class Event(models.Model):
         return self.title
 
 
+class UsedTicketScanException(RuntimeError):
+    pass
+
+
 @reversion.register()
 class Ticket(models.Model):
     """Event ticket model"""
@@ -225,21 +229,34 @@ class Ticket(models.Model):
         Event,
         on_delete=models.RESTRICT,
         verbose_name="Мероприятие",
-        related_name="ticketed_person",
+        related_name="tickets",
     )
+
+    uuid = models.UUIDField(verbose_name="Код", null=True, default=None)
 
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
 
-    def isUsed(self) -> bool:
-        """Checks whether there's a final ticket scan for this ticket"""
-        return self.ticket_scans.exists(isFinal=True)
+    def generate_uuid(self) -> str:
+        self.uuid = uuid.uuid4()
+        self.save()
+        return str(self.uuid)
 
-    def lastScan(self) -> 'TicketScan':
+    @property
+    def is_used(self) -> bool:
+        """Checks whether there's a final ticket scan for this ticket"""
+        return self.ticket_scans.filter(isFinal=True).exists()
+
+    def last_scan(self) -> "TicketScan":
         return self.ticket_scans.order_by("createdAt").last()
 
-    def lastValidScan(self) -> 'TicketScan':
+    def last_valid_scan(self) -> "TicketScan":
         return self.ticket_scans.filter(isFinal=True).order_by("createdAt").last()
+
+    def scan(self):
+        if self.is_used:
+            raise UsedTicketScanException("Ticket has already been used")
+        self.ticket_scans.create(isFinal=True)
 
     def __str__(self) -> str:
         return f"{self.boec} - {self.event}"
@@ -270,8 +287,10 @@ class TicketScan(models.Model):
         return "Проверен" if self.isFinal else "Предъявлен"
 
     def __str__(self) -> str:
-        return f"{self.ticket.boec} — {self.ticket.event} — " \
-               f"{self.is_final} {naturaltime(self.createdAt)}"
+        return (
+            f"{self.ticket.boec} — {self.ticket.event} — "
+            f"{self.is_final} {naturaltime(self.createdAt)}"
+        )
 
 
 @reversion.register()
