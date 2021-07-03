@@ -270,7 +270,7 @@ class TicketViewSet(
     @action(
         methods=["post"],
         detail=True,
-        permission_classes=(IsAuthenticated,),
+        permission_classes=(IsAuthenticated, IsAdminUser),
         url_path="scan",
         url_name="scan",
         authentication_classes=(VKAuthentication,),
@@ -294,7 +294,7 @@ class TicketViewSet(
     @action(
         methods=["post"],
         detail=True,
-        permission_classes=(IsAuthenticated,),
+        permission_classes=(IsAuthenticated, IsAdminUser),
         url_path="unscan",
         url_name="unscan",
         authentication_classes=(VKAuthentication,),
