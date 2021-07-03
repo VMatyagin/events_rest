@@ -1,5 +1,4 @@
 import logging
-from collections import OrderedDict
 
 from core.models import (
     Boec,
@@ -15,12 +14,7 @@ from core.models import (
 from core.serializers import DynamicFieldsModelSerializer
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
-from so.serializers import (
-    BoecInfoSerializer,
-    BrigadeSerializer,
-    BrigadeShortSerializer,
-    ShtabSerializer,
-)
+from so.serializers import BoecInfoSerializer, BrigadeShortSerializer, ShtabSerializer
 
 logger = logging.getLogger(__name__)
 

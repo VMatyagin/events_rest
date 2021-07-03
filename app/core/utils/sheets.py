@@ -1,12 +1,9 @@
 import datetime
 import logging
 
-import event
 import pygsheets
 import pytz
 from core.models import Boec, Conference, Event, EventWorth, Season
-from django.utils import timezone
-from django.utils.timezone import get_current_timezone
 from pygsheets.cell import Cell
 from pygsheets.custom_types import HorizontalAlignment, VerticalAlignment
 from pygsheets.datarange import DataRange
@@ -530,14 +527,14 @@ class EventsRatingGenerator(ReportGenerator):
             for key, value in data.items():
                 try:
                     current_index = brigades_ids.index(key)
-                except:
-                    continue
-                values.append([value])
+                    values.append([value])
 
-                row = self.header_height + current_index + 1
-                ranges.append(
-                    [(row, self.cursor), (row, self.cursor + len(columns) - 1)]
-                )
+                    row = self.header_height + current_index + 1
+                    ranges.append(
+                        [(row, self.cursor), (row, self.cursor + len(columns) - 1)]
+                    )
+                except Exception as e:
+                    logger.exception("render_events() error: ", exc_info=e)
 
             self.cursor = self.cursor + len(columns) - 1
         self.enable_batch(False)

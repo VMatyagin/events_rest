@@ -18,6 +18,7 @@ drf-nested-routers = "0.93.3"
 django-admin-list-filter-dropdown = "1.0.3"
 pygsheets = "2.0.5"
 psycopg2-binary = ">=2.8.6,<2.9.0"
+pydevd-pycharm = "~=193.6911.25"
 
 [tool.poetry.dev-dependencies]
 flake8 = ">=3.8.4,<3.9.0"
