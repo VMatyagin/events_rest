@@ -163,7 +163,16 @@ class EventCompetitionParticipants(RevisionMixin, viewsets.ModelViewSet):
         if "competition_pk" in self.kwargs:
             queryset = queryset.filter(competition=self.kwargs["competition_pk"])
         if worth is not None:
-            queryset = queryset.filter(worth=worth)
+            if int(worth) == 2:
+                queryset = queryset.filter(
+                    worth=1, nomination__isRated=True, nomination__isnull=False
+                )
+            elif int(worth) == 3:
+                queryset = queryset.filter(
+                    worth=1, nomination__isRated=False, nomination__isnull=False
+                )
+            else:
+                queryset = queryset.filter(worth=worth)
         return queryset
 
     def get_serializer_context(self):
@@ -214,7 +223,6 @@ class NominationView(RevisionMixin, viewsets.ModelViewSet):
                 },
                 code="validation",
             )
-        logger.error(serializer.data)
         competitionId = self.kwargs["competition_pk"]
         competition = models.Competition.objects.get(id=competitionId)
         serializer.save(competition=competition)

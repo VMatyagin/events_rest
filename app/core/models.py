@@ -218,6 +218,9 @@ class Season(models.Model):
     )
     year = models.IntegerField(verbose_name="Год выезда")
 
+    isAccepted = models.BooleanField(default=False, verbose_name="Подтвержден")
+    isCandidate = models.BooleanField(default=True, verbose_name="Не стал бойцом")
+
     def __str__(self):
         return f"{self.year} - {self.brigade.title} {self.boec.lastName}"
 
@@ -273,10 +276,7 @@ class Position(models.Model):
 
     def __str__(self):
         additionalMsg = _("Действующий") if (not self.toDate) else ""
-        return (
-            f"{self.get_position_display()} | {self.brigade.title} | {self.boec} | "
-            f"{additionalMsg}"
-        )
+        return f"{self.get_position_display()} | {self.boec} | " f"{additionalMsg}"
 
 
 @reversion.register()
@@ -331,6 +331,7 @@ class Competition(models.Model):
         related_name="competitions",
     )
     title = models.CharField(max_length=255)
+    ratingless = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
@@ -350,8 +351,10 @@ class CompetitionParticipant(models.Model):
         verbose_name="Конкурс",
         related_name="competition_participation",
     )
-    boec = models.ManyToManyField(Boec, related_name="competition_participation")
-    # автоматические привязывается к бойцам
+    boec = models.ManyToManyField(
+        Boec, related_name="competition_participation", blank=True
+    )
+    # принимаем по факту, что brigades привязывается само и не лезем в бойцы
     brigades = models.ManyToManyField(
         Brigade, related_name="competition_participation", blank=True
     )
@@ -359,8 +362,6 @@ class CompetitionParticipant(models.Model):
     class WorthEnum(models.IntegerChoices):
         DEFAULT = 0, _("Заявка")
         INVOLVEMENT = 1, _("Участие/плей-офф")
-        WINNER = 2, _("Призовое место/номинация")
-        NOTWINNER = 3, _("Без рейтинговое(ая) призовое/номинация")
 
     worth = models.IntegerField(
         choices=WorthEnum.choices,
@@ -368,8 +369,10 @@ class CompetitionParticipant(models.Model):
         default=WorthEnum.DEFAULT,
     )
 
+    title = models.CharField(max_length=255, blank=True, null=True)
+
     def __str__(self):
-        brigades_title = ""
+        brigades_title = f"{self.title} "
         for brigade in self.brigades.all():
             brigades_title += f"{brigade.title} | "
         return f"{brigades_title} {self.competition.title} | {self.competition.event.title}"
@@ -396,6 +399,7 @@ class Nomination(models.Model):
     )
 
     isRated = models.BooleanField(default=True)
+
     sportPlace = models.IntegerField(
         verbose_name="Место, если спорт", blank=True, null=True
     )

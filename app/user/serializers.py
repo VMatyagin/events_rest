@@ -1,46 +1,52 @@
 from core.auth_backend import PasswordlessAuthBackend
-from core.models import Position
+from core.models import Boec, Brigade, Position, Shtab
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
-from rest_framework import serializers
+from rest_framework import serializers, status
+from so.serializers import BoecInfoSerializer, BrigadeSerializer, ShtabSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
     """serializer for the users object"""
 
-    brigades = serializers.SerializerMethodField("get_editable_brigades")
+    brigades = serializers.SerializerMethodField(
+        "get_editable_brigades", read_only=True
+    )
+    shtabs = serializers.SerializerMethodField("get_editable_shtabs", read_only=True)
+    boec = serializers.SerializerMethodField("get_boec", read_only=True)
 
     def get_editable_brigades(self, obj):
-        positions = (
-            Position.objects.filter(
-                toDate__isnull=True, shtab__isnull=True, boec__vkId=obj.vkId
-            )
-            .values_list("id", flat=True)
-            .distinct()
+        brigades = Brigade.objects.filter(
+            positions__toDate__isnull=True, positions__boec__vkId=obj.vkId
         )
 
-        return positions
+        serializer = BrigadeSerializer(brigades, many=True, fields=("id", "title"))
 
-    # def get_past_seasons(self, obj):
-    #     value_list = obj.seasons.values_list(
-    #         'year', flat=True
-    #     ).distinct()
-    #     group_by_value = {}
-    #     for value in value_list:
-    #         list = obj.seasons.filter(
-    #             year=value
-    #         ).only('boec')
-    #         serializer = SeasonSerializer(
-    #             list, many=True, fields=('boec', 'id'))
+        return serializer.data
 
-    #         group_by_value[value] = serializer.data
+    def get_editable_shtabs(self, obj):
 
-    #     return group_by_value
+        shtabs = Shtab.objects.filter(
+            positions__toDate__isnull=True,
+            positions__boec__vkId=obj.vkId,
+        )
+
+        serializer = ShtabSerializer(shtabs, many=True, fields=("id", "title"))
+
+        return serializer.data
+
+    def get_boec(self, obj):
+        try:
+            boec_obj = Boec.objects.get(vkId=obj.vkId)
+            serializer = BoecInfoSerializer(boec_obj)
+        except (Boec.DoesNotExist):
+            msg = _("Boec not found")
+            raise serializers.ValidationError({"error": msg})
+        return serializer.data
 
     class Meta:
         model = get_user_model()
-        fields = ("id", "brigades")
-        # extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}
+        fields = ("id", "brigades", "boec", "shtabs", "is_staff")
 
     def create(self, validated_data):
         """create a new user and return it"""
@@ -48,12 +54,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         """update a user and return it"""
-        # password = validated_data.pop('password', None)
         user = super().update(instance, validated_data)
-
-        # if password:
-        #     user.set_password(password)
-        #     user.save()
 
         return user
 

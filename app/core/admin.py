@@ -4,6 +4,7 @@ from core import models
 from core.auth_backend import PasswordlessAuthBackend
 from django import forms
 from django.contrib import admin
+from django.contrib.admin.filters import SimpleListFilter
 from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -119,7 +120,8 @@ class PositionAdmin(CompareVersionAdmin, admin.ModelAdmin):
 
 
 class ParticipantAdmin(CompareVersionAdmin, admin.ModelAdmin):
-    pass
+    list_display = ["boec", "event", "worth"]
+    list_filter = ("event", "worth")
 
 
 class CompetitionAdmin(CompareVersionAdmin, admin.ModelAdmin):

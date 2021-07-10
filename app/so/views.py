@@ -103,7 +103,7 @@ class BoecSeasons(RevisionMixin, viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
     def get_queryset(self):
-        return Season.objects.filter(boec=self.kwargs["boec_pk"])
+        return Season.objects.filter(boec=self.kwargs["boec_pk"], isAccepted=True)
 
 
 class BrigadeViewSet(RevisionMixin, viewsets.ModelViewSet):
@@ -174,11 +174,12 @@ class BrigadeSeasons(RevisionMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.SeasonSerializer
     authentication_classes = (VKAuthentication,)
     permission_classes = (IsAuthenticated,)
-    pagination_class = None
+    filter_backends = [filters.SearchFilter]
+    search_fields = ("^boec__lastName", "boec__firstName", "boec__middleName")
 
     def get_queryset(self):
         return Season.objects.filter(brigade=self.kwargs["brigade_pk"]).order_by(
-            "boec__lastName"
+            "-year"
         )
 
 

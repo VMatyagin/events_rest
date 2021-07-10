@@ -45,24 +45,12 @@ class EventReportGenerator(ReportGenerator):
     zeroCell = (1, 1)
     headeing_height = 2
 
-    last_festival = datetime.date(2020, 12, 10)
+    last_festival = datetime.datetime(2020, 12, 10, tzinfo=pytz.UTC)
 
     current_row = zeroCell[1]
 
-    def find_accepted_year(self):
-        eventDate = self.object.startDate.date()
-
-        currentYear = datetime.datetime.now().year
-
-        yearKoef = (
-            2 if (self.last_festival < eventDate < datetime.date(2021, 7, 1)) else 1
-        )
-        self.acceptedYear = currentYear - yearKoef
-
     def create(self, event):
         self.object = event
-
-        self.find_accepted_year()
 
         wks = self.create_worksheet(title=str(self.object), cols=self.columns)
 
@@ -71,11 +59,15 @@ class EventReportGenerator(ReportGenerator):
         self.past_header(str(event.title), self.zeroCell)
         nextRow = self.current_row + 1
 
-        participant = Boec.objects.filter(event_participation__event=event)
-
-        volonteers = participant.filter(event_participation__worth=1)
-        organizers = participant.filter(event_participation__worth=2)
-        participants = participant.filter(event_participation__worth=0)
+        volonteers = Boec.objects.filter(
+            event_participation__worth=1, event_participation__event=event
+        )
+        organizers = Boec.objects.filter(
+            event_participation__worth=2, event_participation__event=event
+        )
+        participants = Boec.objects.filter(
+            event_participation__worth=0, event_participation__event=event
+        )
 
         info_values = [
             [["Штаб-организатор"], [event.shtab.title if event.shtab else "Без штаба"]],
@@ -86,24 +78,46 @@ class EventReportGenerator(ReportGenerator):
         self.past_info_cells(nextRow, info_values)
         nextRow = self.current_row + 2
 
-        self.past_header("Организаторы", (nextRow, self.zeroCell[1]))
-        nextRow = self.current_row + 1
-        self.past_boec(nextRow, organizers, 2)
-        nextRow = self.current_row + 2
+        if len(organizers) > 0:
+            self.past_header("Организаторы", (nextRow, self.zeroCell[1]))
+            nextRow = self.current_row + 1
+            self.past_boec(nextRow, organizers, 2)
+            nextRow = self.current_row + 2
 
-        self.past_header("Волонтеры", (nextRow, self.zeroCell[1]))
-        nextRow = self.current_row + 1
-        self.past_boec(nextRow, volonteers, 1)
-        nextRow = self.current_row + 2
+        if len(volonteers) > 0:
+            self.past_header("Волонтеры", (nextRow, self.zeroCell[1]))
+            nextRow = self.current_row + 1
+            self.past_boec(nextRow, volonteers, 1)
+            nextRow = self.current_row + 2
 
-        self.past_header("Участники", (nextRow, self.zeroCell[1]))
-        nextRow = self.current_row + 1
-        self.past_boec(nextRow, participants, 0)
+        if len(participants) > 0:
+            self.past_header("Участники", (nextRow, self.zeroCell[1]))
+            nextRow = self.current_row + 1
+            self.past_boec(nextRow, participants, 0)
 
         self.wks.rows = self.current_row
 
         url = self.get_wks_url()
         return url
+
+    def check_is_accepted(self, worth, year, eventDate):
+
+        currentYear = datetime.datetime.now().year
+
+        yearKoef = (
+            2
+            if (
+                self.last_festival.date() < eventDate < datetime.date(2021, 7, 1)
+                and worth == 1
+            )
+            else 1
+        )
+        acceptedYear = currentYear - yearKoef
+
+        if worth != 0:
+            return year >= acceptedYear
+
+        return True
 
     def past_boec(self, nextRow, queryset, worth=0):
         params = queryset.values_list("id", "lastName", "firstName", "middleName")
@@ -112,7 +126,11 @@ class EventReportGenerator(ReportGenerator):
         for boec in params:
             fullName = f"{boec[1]} {boec[2]} {boec[3]}"
             lastSeason = Season.objects.filter(boec=boec[0]).order_by("year").first()
-            isAccepted = worth == 0 or lastSeason.year >= self.acceptedYear
+            isAccepted = self.check_is_accepted(
+                worth=worth,
+                year=lastSeason.year,
+                eventDate=self.object.startDate.date(),
+            )
             row = [
                 fullName,
                 lastSeason.brigade.title,
@@ -406,9 +424,10 @@ class EventsRatingGenerator(ReportGenerator):
 
         values = [
             # не учитываются
-            ["Волонтеры", "Организаторы"],
+            ["", "Волонтеры", "Организаторы"],
             # творчество
             [
+                "[Участники (чел)]",
                 "Волонтеры",
                 "Организаторы",
                 "Подача заявки",
@@ -417,6 +436,7 @@ class EventsRatingGenerator(ReportGenerator):
             ],
             # спорт
             [
+                "[Участники (чел)]",
                 "Волонтеры",
                 "Организаторы",
                 "Участие в соревновании",
@@ -424,9 +444,9 @@ class EventsRatingGenerator(ReportGenerator):
                 "Победа",
             ],
             # волонтерство
-            ["Волонтеры", "Организаторы", "Участие"],
+            ["Участие (чел)", "Волонтеры", "Организаторы"],
             # городские
-            ["Волонтеры", "Организаторы"],
+            ["[Участие (чел)]", "Волонтеры", "Организаторы"],
         ]
 
         return values[worth]
@@ -479,7 +499,6 @@ class EventsRatingGenerator(ReportGenerator):
 
         self.enable_batch(True)
         for event in events:
-
             title_range = DataRange(
                 start=(1, self.cursor),
                 end=(1, self.cursor + len(columns) - 1),
@@ -501,11 +520,13 @@ class EventsRatingGenerator(ReportGenerator):
             eventDate = event.startDate.date()
 
             for participant in event_participants:
+                ### Перебираем участников/волонтеров/оргов ###
                 boec_last_season = (
                     Season.objects.filter(boec=participant.boec)
                     .order_by("year")
                     .first()
                 )
+                # проверяем можно ли зачесть ему
                 is_accepted = self.check_is_accepted(
                     worth=participant.worth,
                     year=boec_last_season.year,
@@ -517,14 +538,108 @@ class EventsRatingGenerator(ReportGenerator):
                 brigade_id = boec_last_season.brigade.id
 
                 if brigade_id not in data:
-                    data[brigade_id] = [""] * len(columns)
-
+                    data[brigade_id] = [None] * len(columns)
+                # плсюуем в нужное место
+                current_value = data[brigade_id][participant.worth]
                 data[brigade_id][participant.worth] = (
-                    data[brigade_id][participant.worth]
-                    if data[brigade_id][participant.worth] != ""
-                    else 0
+                    current_value if current_value != None else 0
                 ) + 1
 
+            # если спорт или творчество, ищем конкурсы
+            if 1 <= event.worth <= 2:
+                # убираем, где не нужно учитывать рейтинг
+                competitions = event.competitions.filter(ratingless=False)
+
+                for competition in competitions:
+                    competition_participants = (
+                        competition.competition_participation.all()
+                    )
+
+                    brigade_participant_added = []
+                    brigade_involvement_added = []
+                    for competition_participant in competition_participants:
+                        # отряды этой заявки
+                        brigades = competition_participant.brigades.all()
+
+                        # сначала добавим подачу заявок или участие
+                        if competition_participant.worth == 0:
+                            for brigade in brigades:
+                                if brigade.id not in data:
+                                    data[brigade.id] = [None] * len(columns)
+
+                                # баллы за участие в спорте суммируются, а в творческих нет
+                                if (
+                                    event.worth == 2
+                                    and brigade.id not in brigade_participant_added
+                                ):
+                                    current_value = data[brigade.id][3]
+                                    data[brigade.id][3] = (
+                                        current_value if current_value != None else 0
+                                    ) + 1
+                                    brigade_participant_added.append(brigade.id)
+                                    continue
+
+                                data[brigade.id][3] = 1
+
+                        # добавляем прошедших в плей-офф, либо участников конкурсной программы
+                        if competition_participant.worth == 1:
+                            nominations_count = (
+                                competition_participant.nomination.filter(
+                                    isRated=True
+                                ).count()
+                            )
+                            if nominations_count == 0:
+                                for brigade in brigades:
+                                    if brigade.id not in data:
+                                        data[brigade.id] = [None] * len(columns)
+
+                                    # баллы за участие в спорте суммируются, а в творческих нет
+                                    if (
+                                        event.worth == 2
+                                        and brigade.id not in brigade_involvement_added
+                                    ):
+                                        current_value = data[brigade.id][4]
+
+                                        data[brigade.id][4] = (
+                                            current_value
+                                            if current_value != None
+                                            else 0
+                                        ) + 1
+                                        brigade_involvement_added.append(brigade.id)
+                                    else:
+
+                                        data[brigade.id][4] = 1
+
+                                    # затираем этому отряду участие
+                                    if data[brigade.id][3]:
+                                        new_value = data[brigade.id][3] - 1
+                                        data[brigade.id][3] = (
+                                            new_value if new_value > 0 else 0
+                                        )
+
+                            # добавляем победы
+                            else:
+                                for brigade in brigades:
+                                    logger.error(brigade)
+                                    if brigade.id not in data:
+                                        data[brigade.id] = [None] * len(columns)
+                                    current_value = data[brigade.id][5]
+
+                                    data[brigade.id][5] = (
+                                        current_value if current_value != None else 0
+                                    ) + nominations_count
+
+                                    # затираем этому отряду плей-офф
+                                    if data[brigade.id][4]:
+                                        new_value = data[brigade.id][4] - 1
+                                        data[brigade.id][4] = (
+                                            new_value if new_value > 0 else 0
+                                        )
+
+                            continue
+
+            # формируем данные для того, чтобы отправить их
+            # извелкаем id из словаря. нужен чтобы знать строку в таблице
             brigades_ids = [brigade[0] for brigade in self.brigades]
 
             for key, value in data.items():
@@ -539,7 +654,7 @@ class EventsRatingGenerator(ReportGenerator):
                     [(row, self.cursor), (row, self.cursor + len(columns) - 1)]
                 )
 
-            self.cursor = self.cursor + len(columns) - 1
+            self.cursor = self.cursor + len(columns)
         self.enable_batch(False)
 
         self.wks.update_values_batch(ranges=ranges, values=values, majordim="ROWS")

@@ -3,7 +3,7 @@ from core.serializers import DynamicFieldsModelSerializer
 from rest_framework import serializers
 
 
-class ShtabSerializer(serializers.ModelSerializer):
+class ShtabSerializer(DynamicFieldsModelSerializer):
     """serializer for the shtab objects"""
 
     class Meta:
@@ -21,7 +21,7 @@ class FilteredListSerializer(serializers.ListSerializer):
         return super(FilteredListSerializer, self).to_representation(data)
 
 
-class BrigadeShortSerializer(serializers.ModelSerializer):
+class BrigadeShortSerializer(DynamicFieldsModelSerializer):
     """serializer with only id and title"""
 
     class Meta:
@@ -60,7 +60,16 @@ class SeasonSerializer(DynamicFieldsModelSerializer):
 
     class Meta:
         model = Season
-        fields = ("id", "boec", "year", "brigade", "brigadeId", "boecId")
+        fields = (
+            "id",
+            "boec",
+            "year",
+            "brigade",
+            "brigadeId",
+            "boecId",
+            "isCandidate",
+            "isAccepted",
+        )
         read_only_fields = ("id", "brigade", "boec")
 
 
@@ -132,6 +141,7 @@ class PositionSerializer(serializers.ModelSerializer):
 
     boec = BoecInfoSerializer(required=False)
     brigade = BrigadeShortSerializer(required=False)
+    shtab = ShtabSerializer(required=False)
     boecId = serializers.PrimaryKeyRelatedField(
         queryset=Boec.objects.all(), source="boec"
     )

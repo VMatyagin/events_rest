@@ -114,12 +114,16 @@ class CompetitionSerializer(DynamicFieldsModelSerializer):
     winner_count = serializers.SerializerMethodField("get_winner_count")
 
     def get_winner_count(self, obj):
-        return obj.competition_participation.filter(worth=2).count()
+        return obj.competition_participation.filter(
+            worth=1, nomination__isnull=False, nomination__isRated=True
+        ).count()
 
     notwinner_count = serializers.SerializerMethodField("get_notwinner_count")
 
     def get_notwinner_count(self, obj):
-        return obj.competition_participation.filter(worth=3).count()
+        return obj.competition_participation.filter(
+            worth=1, nomination__isnull=False, nomination__isRated=False
+        ).count()
 
     class Meta:
         model = Competition
@@ -131,6 +135,7 @@ class CompetitionSerializer(DynamicFieldsModelSerializer):
             "ivolvement_count",
             "winner_count",
             "notwinner_count",
+            "ratingless",
         )
         read_only_fields = (
             "id",
@@ -156,7 +161,7 @@ class NominationSerializer(DynamicFieldsModelSerializer):
 
     class Meta:
         model = Nomination
-        fields = ("id", "competition", "title", "owner", "isRated", "sportPlace")
+        fields = ("id", "competition", "title", "isRated", "sportPlace")
         read_only_fields = ("id",)
         extra_kwargs = {"competition": {"required": False}}
 
@@ -174,16 +179,21 @@ class CompetitionParticipantsSerializer(DynamicFieldsModelSerializer):
         return super().validate(attrs)
 
     def create(self, validated_data):
-
+        brigades_list = list()
+        boec_list = list()
         if "brigades" in validated_data:
             brigades_list = validated_data.pop("brigades")
         if "boec" in validated_data:
             boec_list = validated_data.pop("boec")
 
         instance = CompetitionParticipant.objects.create(**validated_data)
-        if boec_list:
+
+        if len(brigades_list) > 0:
+            instance.brigades.set(brigades_list)
+
+        if len(boec_list) > 0:
             instance.boec.set(boec_list)
-            if "brigades" not in validated_data:
+            if len(brigades_list) == 0:
                 brigade_list = set()
                 for boec in boec_list:
                     boec_last_season = (
@@ -195,32 +205,21 @@ class CompetitionParticipantsSerializer(DynamicFieldsModelSerializer):
 
                     brigade_list.add(boec_last_season.brigade)
                 instance.brigades.set(brigade_list)
-        if brigades_list:
-            instance.brigades.set(brigades_list)
 
         return instance
 
     def update(self, instance, validated_data):
-        if "worth" in validated_data and validated_data["worth"] > 1:
-            if "nominationId" not in self.context["request"].data:
-                raise serializers.ValidationError(
-                    {
-                        "error": "You should pass nominationId for updating worth above 1"
-                    },
-                    code="validation",
+        if "worth" in validated_data and validated_data["worth"] == 1:
+            if "nominationId" in self.context["request"].data:
+                nomination = Nomination.objects.get(
+                    id=self.context["request"].data["nominationId"]
                 )
-            nomination = Nomination.objects.get(
-                id=self.context["request"].data["nominationId"]
-            )
 
-            if not nomination.isRated:
-                validated_data["worth"] = 3
-
-            nomination.owner.add(instance)
+                nomination.owner.add(instance)
 
         if (
             "worth" in validated_data
-            and validated_data["worth"] <= 1
+            and validated_data["worth"] < 1
             and instance.nomination.count() > 0
         ):
             for nomination in instance.nomination.iterator():
@@ -255,6 +254,7 @@ class CompetitionParticipantsSerializer(DynamicFieldsModelSerializer):
             "nomination",
             "brigades",
             "brigadesIds",
+            "title",
         )
         read_only_fields = ("id", "brigades")
         extra_kwargs = {
