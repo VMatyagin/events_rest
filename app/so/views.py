@@ -13,16 +13,6 @@ from reversion.views import RevisionMixin
 from so import serializers
 
 
-class CreateListRetrieveViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet,
-):
-
-    pass
-
-
 class ShtabViewSet(RevisionMixin, viewsets.ModelViewSet):
     """manage shtabs in the database"""
 
@@ -128,14 +118,27 @@ class BrigadeViewSet(RevisionMixin, viewsets.ModelViewSet):
 logger = logging.getLogger(__name__)
 
 
-class BrigadePositions(RevisionMixin, CreateListRetrieveViewSet):
+class BrigadePositions(
+    RevisionMixin,
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
     serializer_class = serializers.PositionSerializer
     authentication_classes = (VKAuthentication,)
     permission_classes = (IsAuthenticated,)
     pagination_class = None
 
     def get_queryset(self):
-        return Position.objects.filter(brigade=self.kwargs["brigade_pk"], toDate=None)
+        queryset = Position.objects.filter(brigade=self.kwargs["brigade_pk"])
+
+        toDate = self.request.query_params.get("hideLast", None)
+        if toDate == "true":
+            queryset = queryset.filter(toDate=None)
+        return queryset.order_by("-toDate")
 
     def perform_create(self, serializer):
         try:
@@ -145,29 +148,6 @@ class BrigadePositions(RevisionMixin, CreateListRetrieveViewSet):
             raise ValidationError({"error": msg}, code="validation")
 
         serializer.save(brigade=brigade)
-
-    @action(
-        methods=["post"],
-        detail=True,
-        permission_classes=(IsAuthenticated,),
-        authentication_classes=(VKAuthentication,),
-        url_path="remove",
-        url_name="remove",
-    )
-    def removeBrigadePosition(self, request, pk, brigade_pk):
-        instance = self.get_object()
-        serializer = self.get_serializer(
-            instance, data={"toDate": datetime.now()}, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        if getattr(instance, "_prefetched_objects_cache", None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
-            instance._prefetched_objects_cache = {}
-
-        return Response(serializer.data)
 
 
 class BrigadeSeasons(RevisionMixin, viewsets.ReadOnlyModelViewSet):

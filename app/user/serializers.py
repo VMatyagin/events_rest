@@ -18,7 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
     def get_editable_brigades(self, obj):
         brigades = Brigade.objects.filter(
             positions__toDate__isnull=True, positions__boec__vkId=obj.vkId
-        )
+        ).distinct()
 
         serializer = BrigadeSerializer(brigades, many=True, fields=("id", "title"))
 
@@ -29,7 +29,7 @@ class UserSerializer(serializers.ModelSerializer):
         shtabs = Shtab.objects.filter(
             positions__toDate__isnull=True,
             positions__boec__vkId=obj.vkId,
-        )
+        ).distinct()
 
         serializer = ShtabSerializer(shtabs, many=True, fields=("id", "title"))
 
