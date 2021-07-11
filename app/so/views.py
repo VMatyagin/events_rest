@@ -118,7 +118,7 @@ class BrigadeViewSet(RevisionMixin, viewsets.ModelViewSet):
 logger = logging.getLogger(__name__)
 
 
-class BrigadePositions(
+class SubjectPositions(
     RevisionMixin,
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
@@ -133,7 +133,10 @@ class BrigadePositions(
     pagination_class = None
 
     def get_queryset(self):
-        queryset = Position.objects.filter(brigade=self.kwargs["brigade_pk"])
+        queryset = Position.objects.filter(
+            brigade=self.kwargs.get("brigade_pk", None),
+            shtab=self.kwargs.get("shtab_pk", None),
+        )
 
         toDate = self.request.query_params.get("hideLast", None)
         if toDate == "true":
@@ -141,13 +144,29 @@ class BrigadePositions(
         return queryset.order_by("-toDate")
 
     def perform_create(self, serializer):
-        try:
-            brigade = Brigade.objects.get(id=self.kwargs["brigade_pk"])
-        except (Brigade.DoesNotExist, ValidationError):
-            msg = _("Invalid brigade.")
-            raise ValidationError({"error": msg}, code="validation")
+        brigadeId = self.kwargs.get("brigade_pk", None)
+        shtabId = self.kwargs.get("shtab_pk", None)
+        if brigadeId:
+            try:
+                brigade = Brigade.objects.get(id=brigadeId)
+                serializer.save(brigade=brigade)
 
-        serializer.save(brigade=brigade)
+            except (Brigade.DoesNotExist, ValidationError):
+                msg = _("Invalid brigade.")
+                raise ValidationError({"error": msg}, code="validation")
+
+        elif shtabId:
+            try:
+                shtab = Shtab.objects.get(id=shtabId)
+                serializer.save(shtab=shtab)
+
+            except (Shtab.DoesNotExist, ValidationError):
+                msg = _("Invalid shtab.")
+                raise ValidationError({"error": msg}, code="validation")
+        else:
+            raise ValidationError(
+                {"Error": _("Provide shtab or brigade")}, code="validation"
+            )
 
 
 class BrigadeSeasons(RevisionMixin, viewsets.ReadOnlyModelViewSet):
