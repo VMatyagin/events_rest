@@ -3,6 +3,7 @@ from threading import Thread
 
 from core import models
 from core.authentication import VKAuthentication
+from core.models import UsedTicketScanException
 from core.utils.sheets import EventReportGenerator, EventsRatingGenerator
 from django.core.exceptions import ValidationError
 from event import serializers
@@ -60,6 +61,27 @@ class EventViewSet(
         Thread(target=reporter.create, args=[event]).start()
 
         return Response({})
+
+    @action(
+        methods=["post"],
+        detail=True,
+        permission_classes=(IsAuthenticated, IsAdminUser),
+        url_path="generate_tickets",
+        url_name="generate_tickets",
+        authentication_classes=(VKAuthentication,),
+    )
+    def generate_tickets(self, request, pk):
+        event = models.Event.objects.get(id=pk)
+        if not event.isTicketed:
+            raise ValueError(f"Event {event} is not ticketed")
+
+        if event.tickets.count() == 0:
+            raise ValueError(f"Event {event} has no tickets")
+
+        for ticket in event.tickets.all():
+            ticket.generate_uuid()
+
+        return Response({"event_id": event.id, "ticket_count": event.tickets.count()})
 
     @action(
         methods=["post"],
@@ -236,3 +258,60 @@ class NominationView(RevisionMixin, viewsets.ModelViewSet):
                 owner.save()
 
         return super().perform_destroy(instance)
+
+
+class TicketViewSet(
+    RevisionMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
+
+    serializer_class = serializers.TicketSerializer
+    authentication_classes = (VKAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        queryset = models.Ticket.objects.all()
+        return queryset
+
+    @action(
+        methods=["post"],
+        detail=True,
+        permission_classes=(IsAuthenticated, IsAdminUser),
+        url_path="scan",
+        url_name="scan",
+        authentication_classes=(VKAuthentication,),
+    )
+    def scan(self, request, pk):
+        ticket = models.Ticket.objects.get(id=pk)
+        previous_scan = ticket.last_scan()
+        try:
+            ticket.scan()
+        except UsedTicketScanException:
+            return Response(
+                {
+                    "error": "Ticket already scanned",
+                    "scannedAt": ticket.last_valid_scan().createdAt,
+                }
+            )
+        return Response(
+            {"prevScanAt": previous_scan.createdAt, "eventId": ticket.event.id}
+        )
+
+    @action(
+        methods=["post"],
+        detail=True,
+        permission_classes=(IsAuthenticated, IsAdminUser),
+        url_path="unscan",
+        url_name="unscan",
+        authentication_classes=(VKAuthentication,),
+    )
+    def unscan(self, request, pk):
+        ticket = models.Ticket.objects.get(id=pk)
+        if not ticket.is_used:
+            raise ValueError("Ticket never actually used")
+        last_valid_scan = ticket.last_valid_scan()
+        last_valid_scan.isFinal = False
+        last_valid_scan.save()
+        return Response({})

@@ -1,5 +1,4 @@
 import logging
-from collections import OrderedDict
 
 from core.models import (
     Boec,
@@ -11,16 +10,12 @@ from core.models import (
     Participant,
     Season,
     Shtab,
+    Ticket,
 )
 from core.serializers import DynamicFieldsModelSerializer
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
-from so.serializers import (
-    BoecInfoSerializer,
-    BrigadeSerializer,
-    BrigadeShortSerializer,
-    ShtabSerializer,
-)
+from so.serializers import BoecInfoSerializer, BrigadeShortSerializer, ShtabSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +42,7 @@ class EventSerializer(DynamicFieldsModelSerializer):
             "visibility",
             "worth",
             "shtabId",
+            "isTicketed",
         )
         read_only_fields = ("id", "shtab")
 
@@ -261,3 +257,22 @@ class CompetitionParticipantsSerializer(DynamicFieldsModelSerializer):
             "competition": {"required": False},
             "nomination": {"required": False},
         }
+
+
+class TicketSerializer(DynamicFieldsModelSerializer):
+    """Serializer for tickets"""
+
+    event = EventSerializer(read_only=True)
+    boec = BoecInfoSerializer(read_only=True)
+
+    class Meta:
+        model = Ticket
+        fields = (
+            "id",
+            "uuid",
+            "boec",
+            "event",
+            "createdAt",
+            "updatedAt",
+        )
+        read_only_fields = ("id",)

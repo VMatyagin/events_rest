@@ -7,6 +7,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
+from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -56,6 +57,10 @@ class UserManager(BaseUserManager):
 @reversion.register()
 class User(AbstractBaseUser, PermissionsMixin):
     """custom user model that support using id instead of username"""
+
+    class Meta:
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
 
     vkId = models.IntegerField(unique=True)
 
@@ -187,7 +192,7 @@ class Event(models.Model):
         max_length=255, blank=True, null=True, verbose_name="Описание"
     )
     location = models.CharField(
-        max_length=255, blank=True, null=True, verbose_name="Место проведение"
+        max_length=255, blank=True, null=True, verbose_name="Место проведения"
     )
     shtab = models.ForeignKey(
         Shtab, on_delete=models.SET_NULL, null=True, verbose_name="Штаб"
@@ -198,8 +203,94 @@ class Event(models.Model):
     visibility = models.BooleanField(default=False, verbose_name="Видимость")
     isCanonical = models.BooleanField(default=False, verbose_name="Каноничность")
 
+    isTicketed = models.BooleanField(default=False, verbose_name="Вход по билетам")
+
     def __str__(self):
         return self.title
+
+
+class UsedTicketScanException(RuntimeError):
+    pass
+
+
+@reversion.register()
+class Ticket(models.Model):
+    """Event ticket model"""
+
+    class Meta:
+        verbose_name = "Билет"
+        verbose_name_plural = "Билеты"
+
+    boec = models.ForeignKey(
+        Boec, on_delete=models.CASCADE, verbose_name="ФИО", related_name="tickets"
+    )
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.RESTRICT,
+        verbose_name="Мероприятие",
+        related_name="tickets",
+    )
+
+    uuid = models.UUIDField(verbose_name="Код", null=True, default=None)
+
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
+
+    def generate_uuid(self) -> str:
+        self.uuid = uuid.uuid4()
+        self.save()
+        return str(self.uuid)
+
+    @property
+    def is_used(self) -> bool:
+        """Checks whether there's a final ticket scan for this ticket"""
+        return self.ticket_scans.filter(isFinal=True).exists()
+
+    def last_scan(self) -> "TicketScan":
+        return self.ticket_scans.order_by("createdAt").last()
+
+    def last_valid_scan(self) -> "TicketScan":
+        return self.ticket_scans.filter(isFinal=True).order_by("createdAt").last()
+
+    def scan(self):
+        if self.is_used:
+            raise UsedTicketScanException("Ticket has already been used")
+        self.ticket_scans.create(isFinal=True)
+
+    def __str__(self) -> str:
+        return f"{self.boec} - {self.event}"
+
+
+@reversion.register()
+class TicketScan(models.Model):
+    """Event ticket scan model"""
+
+    class Meta:
+        verbose_name = "Скан билета"
+        verbose_name_plural = "Сканы билетов"
+
+    ticket = models.ForeignKey(
+        Ticket,
+        on_delete=models.CASCADE,
+        verbose_name="Билет",
+        related_name="ticket_scans",
+    )
+
+    isFinal = models.BooleanField(default=True, verbose_name="Проверен")
+
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
+
+    @property
+    def is_final(self) -> str:
+        return "Проверен" if self.isFinal else "Предъявлен"
+
+    def __str__(self) -> str:
+        return (
+            f"{self.ticket.boec} — {self.ticket.event} — "
+            f"{self.is_final} {naturaltime(self.createdAt)}"
+        )
 
 
 @reversion.register()

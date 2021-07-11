@@ -140,6 +140,14 @@ class ConferenceAdmin(CompareVersionAdmin, admin.ModelAdmin):
     pass
 
 
+class TicketAdmin(CompareVersionAdmin, admin.ModelAdmin):
+    pass
+
+
+class TicketScanAdmin(CompareVersionAdmin, admin.ModelAdmin):
+    pass
+
+
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Shtab, ShtabAdmin)
 admin.site.register(models.Area, AreaAdmin)
@@ -153,3 +161,5 @@ admin.site.register(models.Competition, CompetitionAdmin)
 admin.site.register(models.CompetitionParticipant, CompetitionParticipantAdmin)
 admin.site.register(models.Nomination, NominationAdmin)
 admin.site.register(models.Conference, ConferenceAdmin)
+admin.site.register(models.Ticket, TicketAdmin)
+admin.site.register(models.TicketScan, TicketScanAdmin)
