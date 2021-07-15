@@ -403,6 +403,14 @@ class Participant(models.Model):
         default=WorthEnum.DEFAULT,
     )
 
+    brigade = models.ForeignKey(
+        Brigade,
+        on_delete=models.RESTRICT,
+        verbose_name="Отряд",
+        null=True,
+        blank=True,
+    )
+
     def __str__(self):
         return f"{self.boec.lastName} | {self.worth} | {self.event.title}"
 

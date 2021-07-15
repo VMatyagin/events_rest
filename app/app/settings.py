@@ -25,7 +25,7 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS: List[str] = ["app.so.spb.ru"]
+ALLOWED_HOSTS: List[str] = ["app.so.spb.ru", "localhost"]
 
 # Application definition
 

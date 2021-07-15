@@ -81,7 +81,7 @@ class ParticipantSerializer(DynamicFieldsModelSerializer):
 
     class Meta:
         model = Participant
-        fields = ("id", "boec", "event", "worth", "boecId", "eventId")
+        fields = ("id", "boec", "event", "worth", "boecId", "eventId", "brigade")
         read_only_fields = ("id", "boec", "event")
 
 

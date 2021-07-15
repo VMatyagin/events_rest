@@ -518,11 +518,20 @@ class EventsRatingGenerator(ReportGenerator):
 
             for participant in event_participants:
                 ### Перебираем участников/волонтеров/оргов ###
-                boec_last_season = (
-                    Season.objects.filter(boec=participant.boec)
-                    .order_by("year")
-                    .first()
-                )
+                if brigade in participant:
+                    boec_last_season = (
+                        Season.objects.filter(
+                            boec=participant.boec, brigade=participant.brigade
+                        )
+                        .order_by("year")
+                        .first()
+                    )
+                else:
+                    boec_last_season = (
+                        Season.objects.filter(boec=participant.boec)
+                        .order_by("year")
+                        .first()
+                    )
                 # проверяем можно ли зачесть ему
                 is_accepted = self.check_is_accepted(
                     worth=participant.worth,

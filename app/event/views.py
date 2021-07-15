@@ -3,7 +3,7 @@ from threading import Thread
 
 from core import models
 from core.authentication import VKAuthentication
-from core.models import UsedTicketScanException
+from core.models import Season, UsedTicketScanException
 from core.utils.sheets import EventReportGenerator, EventsRatingGenerator
 from django.core.exceptions import ValidationError
 from event import serializers
@@ -122,7 +122,16 @@ class EventParticipant(RevisionMixin, CreateListAndDestroyViewSet):
         eventId = self.kwargs["event_pk"]
         event = models.Event.objects.get(id=eventId)
 
-        serializer.save(event=event)
+        if "brigade" not in serializer.validated_data:
+            boec_last_season = (
+                Season.objects.filter(boec=serializer.validated_data["boec"])
+                .order_by("year")
+                .first()
+            )
+            serializer.save(event=event, brigade=boec_last_season.brigade)
+
+        else:
+            serializer.save(event=event)
 
 
 class EventCompetitionListCreate(
