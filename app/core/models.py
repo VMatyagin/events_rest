@@ -410,6 +410,7 @@ class Participant(models.Model):
         null=True,
         blank=True,
     )
+    isApproved = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.boec.lastName} | {self.worth} | {self.event.title}"

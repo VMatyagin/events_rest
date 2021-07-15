@@ -12,6 +12,9 @@ class UserSerializer(serializers.ModelSerializer):
     brigades = serializers.SerializerMethodField(
         "get_editable_brigades", read_only=True
     )
+    seasonBrigades = serializers.SerializerMethodField(
+        "get_season_brigades", read_only=True
+    )
     shtabs = serializers.SerializerMethodField("get_editable_shtabs", read_only=True)
     boec = serializers.SerializerMethodField("get_boec", read_only=True)
 
@@ -19,6 +22,13 @@ class UserSerializer(serializers.ModelSerializer):
         brigades = Brigade.objects.filter(
             positions__toDate__isnull=True, positions__boec__vkId=obj.vkId
         ).distinct()
+
+        serializer = BrigadeSerializer(brigades, many=True, fields=("id", "title"))
+
+        return serializer.data
+
+    def get_season_brigades(self, obj):
+        brigades = Brigade.objects.filter(seasons__boec__vkId=obj.vkId).distinct()
 
         serializer = BrigadeSerializer(brigades, many=True, fields=("id", "title"))
 
@@ -46,7 +56,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        fields = ("id", "brigades", "boec", "shtabs", "is_staff")
+        fields = ("id", "brigades", "boec", "shtabs", "is_staff", "seasonBrigades")
 
     def create(self, validated_data):
         """create a new user and return it"""

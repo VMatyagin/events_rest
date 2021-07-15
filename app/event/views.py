@@ -45,7 +45,16 @@ class EventViewSet(
 
     def get_queryset(self):
         """Return ordered by title objects"""
-        return self.queryset.order_by("-startDate")
+        queryset = self.queryset.order_by("-startDate")
+
+        visibility = self.request.query_params.get("visibility")
+
+        if visibility == "false":
+            queryset = queryset.filter(visibility=False)
+        if visibility == "true":
+            queryset = queryset.filter(visibility=True)
+
+        return queryset
 
     @action(
         methods=["post"],
@@ -107,11 +116,22 @@ class EventParticipant(RevisionMixin, CreateListAndDestroyViewSet):
 
     def get_queryset(self):
         worth = self.request.query_params.get("worth", None)
+        brigadeId = self.request.query_params.get("brigadeId", None)
+        status = self.request.query_params.get("status", "approved")
+        queryset = models.Participant.objects.filter(event=self.kwargs["event_pk"])
+
+        if self.request.method == "GET" and status == "approved":
+            queryset = queryset.filter(isApproved=True)
+
+        if self.request.method == "GET" and status == "notapproved":
+            queryset = queryset.filter(isApproved=False)
+
         if worth is not None:
-            return models.Participant.objects.filter(
-                event=self.kwargs["event_pk"], worth=worth
-            )
-        return models.Participant.objects.filter(event=self.kwargs["event_pk"])
+            queryset = queryset.filter(worth=worth)
+
+        if brigadeId is not None:
+            queryset = queryset.filter(brigade=brigadeId)
+        return queryset
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -121,17 +141,55 @@ class EventParticipant(RevisionMixin, CreateListAndDestroyViewSet):
     def perform_create(self, serializer):
         eventId = self.kwargs["event_pk"]
         event = models.Event.objects.get(id=eventId)
+        worth = serializer.validated_data["worth"]
+
+        isApproved = serializer.validated_data.get("isApproved", False)
+
+        if not isApproved and worth > 0 or not event.isTicketed:
+            isApproved = True
 
         if "brigade" not in serializer.validated_data:
             boec_last_season = (
                 Season.objects.filter(boec=serializer.validated_data["boec"])
-                .order_by("year")
+                .order_by("-year")
                 .first()
             )
-            serializer.save(event=event, brigade=boec_last_season.brigade)
+            serializer.save(
+                event=event, brigade=boec_last_season.brigade, isApproved=isApproved
+            )
 
         else:
-            serializer.save(event=event)
+            serializer.save(event=event, isApproved=isApproved)
+
+    @action(
+        methods=["post"],
+        detail=True,
+        permission_classes=(IsAuthenticated,),
+        url_path="approve",
+        url_name="approve",
+        authentication_classes=(VKAuthentication,),
+    )
+    def approve(self, request, pk, **kwargs):
+        participant = models.Participant.objects.get(id=pk)
+        participant.isApproved = True
+        participant.save()
+
+        return Response({})
+
+    @action(
+        methods=["post"],
+        detail=True,
+        permission_classes=(IsAuthenticated,),
+        url_path="unapprove",
+        url_name="unapprove",
+        authentication_classes=(VKAuthentication,),
+    )
+    def unapprove(self, request, pk, **kwargs):
+        participant = models.Participant.objects.get(id=pk)
+        participant.isApproved = False
+        participant.save()
+
+        return Response({})
 
 
 class EventCompetitionListCreate(

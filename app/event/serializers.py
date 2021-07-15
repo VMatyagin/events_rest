@@ -28,6 +28,27 @@ class EventSerializer(DynamicFieldsModelSerializer):
         queryset=Shtab.objects.all(), source="shtab", required=False
     )
 
+    isParticipant = serializers.SerializerMethodField("get_participant_status")
+
+    def get_participant_status(self, obj):
+        user = None
+        request = self.context.get("request")
+
+        if request and hasattr(request, "user"):
+            user = request.user
+            try:
+                boec = Boec.objects.get(vkId=user.vkId)
+            except (Boec.DoesNotExist):
+                msg = _("Boec not found")
+                raise serializers.ValidationError({"error": msg})
+
+            participant = Participant.objects.filter(boec=boec, event=obj.id)
+
+            if participant.count() != 0:
+                return True
+
+        return False
+
     class Meta:
         model = Event
         fields = (
@@ -43,6 +64,7 @@ class EventSerializer(DynamicFieldsModelSerializer):
             "worth",
             "shtabId",
             "isTicketed",
+            "isParticipant",
         )
         read_only_fields = ("id", "shtab")
 
@@ -81,7 +103,16 @@ class ParticipantSerializer(DynamicFieldsModelSerializer):
 
     class Meta:
         model = Participant
-        fields = ("id", "boec", "event", "worth", "boecId", "eventId", "brigade")
+        fields = (
+            "id",
+            "boec",
+            "event",
+            "worth",
+            "boecId",
+            "eventId",
+            "brigade",
+            "isApproved",
+        )
         read_only_fields = ("id", "boec", "event")
 
 
