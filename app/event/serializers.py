@@ -290,6 +290,24 @@ class CompetitionParticipantsSerializer(DynamicFieldsModelSerializer):
         }
 
 
+class AchievementCompetitionParticipantsSerializer(DynamicFieldsModelSerializer):
+    """serializer for participants Competition"""
+
+    nomination = NominationSerializer(many=True, read_only=True, fields=("id", "title"))
+    competition = CompetitionSerializer(read_only=True, fields=("id", "title"))
+    event = serializers.SerializerMethodField("get_event")
+
+    def get_event(self, obj):
+        event = obj.competition.event
+        serializer = EventSerializer(event, fields=("title",))
+
+        return serializer.data
+
+    class Meta:
+        model = CompetitionParticipant
+        fields = ("id", "competition", "worth", "nomination", "title", "event")
+
+
 class TicketSerializer(DynamicFieldsModelSerializer):
     """Serializer for tickets"""
 

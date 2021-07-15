@@ -22,6 +22,9 @@ shtab_router.register(r"positions", views.SubjectPositions, basename="shtab-posi
 boec_router = routers.NestedSimpleRouter(router, r"boec", lookup="boec")
 boec_router.register(r"positions", views.BoecPositions, basename="boec-positions")
 boec_router.register(r"seasons", views.BoecSeasons, basename="boec-seasons")
+boec_router.register(
+    r"achievements", views.BoecAchievements, basename="boec-achievement"
+)
 
 router.register(r"conference", views.ConferenceViewSet)
 

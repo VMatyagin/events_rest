@@ -2,8 +2,25 @@ import logging
 from datetime import datetime
 
 from core.authentication import VKAuthentication
-from core.models import Area, Boec, Brigade, Conference, Position, Season, Shtab
+from core.models import (
+    Area,
+    Boec,
+    Brigade,
+    CompetitionParticipant,
+    Conference,
+    Participant,
+    Position,
+    Season,
+    Shtab,
+)
+from django.db.models import fields
 from django.utils.translation import ugettext_lazy as _
+from event.serializers import (
+    AchievementCompetitionParticipantsSerializer,
+    CompetitionParticipantsSerializer,
+    CompetitionSerializer,
+    ParticipantSerializer,
+)
 from rest_framework import filters, mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -94,6 +111,35 @@ class BoecSeasons(RevisionMixin, viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return Season.objects.filter(boec=self.kwargs["boec_pk"], isAccepted=True)
+
+
+class BoecAchievements(RevisionMixin, viewsets.GenericViewSet):
+    authentication_classes = (VKAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    pagination_class = None
+
+    def list(self, request, *args, **kwargs):
+        event_participant = Participant.objects.filter(
+            boec=self.kwargs["boec_pk"], isApproved=True
+        )
+        competition_participant = CompetitionParticipant.objects.filter(
+            boec=self.kwargs["boec_pk"], worth=1
+        )
+
+        participant_serializer = ParticipantSerializer(
+            event_participant, fields=("event", "worth"), many=True
+        )
+        competition_participant_serializer = (
+            AchievementCompetitionParticipantsSerializer(
+                competition_participant, many=True
+            )
+        )
+        return Response(
+            {
+                "event_participant": participant_serializer.data,
+                "competition_participant": competition_participant_serializer.data,
+            }
+        )
 
 
 class BrigadeViewSet(RevisionMixin, viewsets.ModelViewSet):
