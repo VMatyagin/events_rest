@@ -14,10 +14,7 @@ from core.models import (
     Shtab,
 )
 from django.utils.translation import ugettext_lazy as _
-from event.serializers import (
-    AchievementCompetitionParticipantsSerializer,
-    ParticipantSerializer,
-)
+from event.serializers import ParticipantHistorySerializer, ParticipantSerializer
 from rest_framework import filters, mixins, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
@@ -109,7 +106,7 @@ class BoecSeasons(RevisionMixin, viewsets.ReadOnlyModelViewSet):
         return Season.objects.filter(boec=self.kwargs["boec_pk"], isAccepted=True)
 
 
-class BoecAchievements(RevisionMixin, viewsets.GenericViewSet):
+class BoecParticipantHistory(RevisionMixin, viewsets.GenericViewSet):
     authentication_classes = (VKAuthentication,)
     permission_classes = (IsAuthenticated,)
     pagination_class = None
@@ -125,10 +122,8 @@ class BoecAchievements(RevisionMixin, viewsets.GenericViewSet):
         participant_serializer = ParticipantSerializer(
             event_participant, fields=("event", "worth"), many=True
         )
-        competition_participant_serializer = (
-            AchievementCompetitionParticipantsSerializer(
-                competition_participant, many=True
-            )
+        competition_participant_serializer = ParticipantHistorySerializer(
+            competition_participant, many=True
         )
         return Response(
             {

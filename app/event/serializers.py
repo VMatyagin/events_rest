@@ -290,7 +290,7 @@ class CompetitionParticipantsSerializer(DynamicFieldsModelSerializer):
         }
 
 
-class AchievementCompetitionParticipantsSerializer(DynamicFieldsModelSerializer):
+class ParticipantHistorySerializer(DynamicFieldsModelSerializer):
     """serializer for participants Competition"""
 
     nomination = NominationSerializer(many=True, read_only=True, fields=("id", "title"))
