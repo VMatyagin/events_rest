@@ -13,16 +13,12 @@ from core.models import (
     Season,
     Shtab,
 )
-from django.db.models import fields
 from django.utils.translation import ugettext_lazy as _
 from event.serializers import (
     AchievementCompetitionParticipantsSerializer,
-    CompetitionParticipantsSerializer,
-    CompetitionSerializer,
     ParticipantSerializer,
 )
 from rest_framework import filters, mixins, viewsets
-from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response

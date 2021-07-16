@@ -131,6 +131,7 @@ class Boec(models.Model):
     created_at = models.DateField(default=timezone.now)
     updated_at = AutoDateTimeField(default=timezone.now)
     vkId = models.IntegerField(verbose_name="VK id", blank=True, null=True, unique=True)
+    unreadActivityCount = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.lastName} {self.firstName} {self.middleName}"
@@ -524,3 +525,57 @@ class Conference(models.Model):
 
     def __str__(self):
         return f"{self.date} | {self.brigades.count()} отрядов | {self.shtabs.count()} штабов"
+
+
+@reversion.register()
+class Warning(models.Model):
+    """Warning model"""
+
+    class Meta:
+        verbose_name = "Предупреждение"
+        verbose_name_plural = "Предупреждения"
+
+    created_at = models.DateField(default=timezone.now)
+
+    text = models.CharField(max_length=255)
+
+
+@reversion.register()
+class Activity(models.Model):
+    """Notifications model"""
+
+    class Meta:
+        verbose_name = "Уведомление"
+        verbose_name_plural = "Конференции"
+
+    class ActivityEnum(models.IntegerChoices):
+        INFO = 0, _("Информация")
+        WARNING = 1, _("Предупреждение")
+        NEW_ACHIEVEMENT = 2, _("Достижение")
+
+    type = models.IntegerField(
+        choices=ActivityEnum.choices,
+        verbose_name="Тип",
+        default=ActivityEnum.INFO,
+    )
+
+    boec = models.ForeignKey(
+        Boec,
+        on_delete=models.RESTRICT,
+        verbose_name="Боец",
+        related_name="activities",
+    )
+
+    created_at = models.DateField(default=timezone.now)
+
+    warning = models.ForeignKey(
+        Warning,
+        on_delete=models.RESTRICT,
+        verbose_name="Предупреждение",
+        related_name="activities",
+    )
+
+    seen = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.type} | {self.boec.fullName} | {self.warning.text}"

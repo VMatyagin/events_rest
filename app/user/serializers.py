@@ -1,5 +1,6 @@
 from core.auth_backend import PasswordlessAuthBackend
-from core.models import Boec, Brigade, Position, Shtab
+from core.models import Activity, Boec, Brigade, Position, Shtab
+from core.serializers import DynamicFieldsModelSerializer
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers, status
@@ -17,6 +18,9 @@ class UserSerializer(serializers.ModelSerializer):
     )
     shtabs = serializers.SerializerMethodField("get_editable_shtabs", read_only=True)
     boec = serializers.SerializerMethodField("get_boec", read_only=True)
+    unreadActivityCount = serializers.SerializerMethodField(
+        "get_boec_unreadActivityCount", read_only=True
+    )
 
     def get_editable_brigades(self, obj):
         brigades = Brigade.objects.filter(
@@ -54,9 +58,25 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"error": msg})
         return serializer.data
 
+    def get_boec_unreadActivityCount(self, obj):
+        try:
+            boec_obj = Boec.objects.get(vkId=obj.vkId)
+            return boec_obj.unreadActivityCount
+        except (Boec.DoesNotExist):
+            msg = _("Boec not found")
+            raise serializers.ValidationError({"error": msg})
+
     class Meta:
         model = get_user_model()
-        fields = ("id", "brigades", "boec", "shtabs", "is_staff", "seasonBrigades")
+        fields = (
+            "id",
+            "brigades",
+            "boec",
+            "shtabs",
+            "is_staff",
+            "seasonBrigades",
+            "unreadActivityCount",
+        )
 
     def create(self, validated_data):
         """create a new user and return it"""
@@ -94,3 +114,11 @@ class AuthTokenSerializer(serializers.Serializer):
 
         attrs["user"] = user
         return attrs
+
+
+class ActivitySerailizer(DynamicFieldsModelSerializer):
+    """serializer for Activity"""
+
+    class Meta:
+        model = Activity
+        fields = ("id", "type", "created_at", "warning")
