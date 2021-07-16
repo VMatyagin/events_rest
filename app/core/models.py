@@ -541,12 +541,75 @@ class Warning(models.Model):
 
 
 @reversion.register()
+class Achievement(models.Model):
+    """NotificaAchievementtions model"""
+
+    class Meta:
+        verbose_name = "Достижение"
+        verbose_name_plural = "Достижения"
+
+    class ActivityEnum(models.TextChoices):
+        PARTICIPATION_DEFAULT = (
+            "paticipation_count",
+            _("Посещение мероприятия"),
+        )
+        PARTICIPATION_VOLONTEER = (
+            "volonteer_count",
+            _("Волонтерство"),
+        )
+        PARTICIPATION_ORGANIZER = (
+            "organizer_count",
+            _("Организаторство"),
+        )
+        COMPETITION_DEFAULT = (
+            "competition_default",
+            _("Подача заявки"),
+        )
+        COMPETITION_PLAYOFF = (
+            "competition_playoff",
+            _("Прохождение в плейофф"),
+        )
+        NOMINATIONS = (
+            "nominations",
+            _("Номинации"),
+        )
+        SEASONS = (
+            "seasons",
+            _("Сезоны"),
+        )
+        SPORT_WINS = (
+            "sport_wins",
+            _("Номинация в спорте"),
+        )
+        ART_WINS = (
+            "art_wins",
+            _("Номинация в творчестве"),
+        )
+
+    type = models.TextField(
+        choices=ActivityEnum.choices,
+        verbose_name="Тип",
+    )
+
+    boec = models.ManyToManyField(Boec, related_name="achievements", blank=True)
+
+    created_at = models.DateField(default=timezone.now)
+
+    title = models.TextField(max_length=255)
+
+    goal = models.IntegerField(verbose_name="Цель")
+
+    def __str__(self):
+        return f"{self.title} | Обладателей: {self.boec.count()}"
+
+
+@reversion.register()
 class Activity(models.Model):
-    """Notifications model"""
+    """Activity model"""
 
     class Meta:
         verbose_name = "Уведомление"
-        verbose_name_plural = "Конференции"
+        verbose_name_plural = "Уведомления"
 
     class ActivityEnum(models.IntegerChoices):
         INFO = 0, _("Информация")
@@ -573,9 +636,20 @@ class Activity(models.Model):
         on_delete=models.RESTRICT,
         verbose_name="Предупреждение",
         related_name="activities",
+        blank=True,
+        null=True,
+    )
+
+    achievement = models.ForeignKey(
+        Achievement,
+        on_delete=models.RESTRICT,
+        verbose_name="Достижение",
+        related_name="activities",
+        blank=True,
+        null=True,
     )
 
     seen = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.type} | {self.boec.fullName} | {self.warning.text}"
+        return f"{self.get_type_display()} | {self.boec} | {self.warning or self.achievement} "

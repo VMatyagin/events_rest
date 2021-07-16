@@ -1,5 +1,5 @@
 from core.auth_backend import PasswordlessAuthBackend
-from core.models import Activity, Boec, Brigade, Position, Shtab
+from core.models import Achievement, Activity, Boec, Brigade, Shtab, Warning
 from core.serializers import DynamicFieldsModelSerializer
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
@@ -116,9 +116,28 @@ class AuthTokenSerializer(serializers.Serializer):
         return attrs
 
 
+class WarningSerailizer(DynamicFieldsModelSerializer):
+    """serializer for Warning"""
+
+    class Meta:
+        model = Warning
+        fields = ("id", "text")
+
+
+class AchievementSerailizer(DynamicFieldsModelSerializer):
+    """serializer for Achievement"""
+
+    class Meta:
+        model = Achievement
+        fields = ("id", "type", "created_at", "title", "goal")
+
+
 class ActivitySerailizer(DynamicFieldsModelSerializer):
     """serializer for Activity"""
 
+    warning = WarningSerailizer()
+    achievement = AchievementSerailizer()
+
     class Meta:
         model = Activity
-        fields = ("id", "type", "created_at", "warning")
+        fields = ("id", "type", "created_at", "warning", "achievement")

@@ -23,6 +23,7 @@ boec_router = routers.NestedSimpleRouter(router, r"boec", lookup="boec")
 boec_router.register(r"positions", views.BoecPositions, basename="boec-positions")
 boec_router.register(r"seasons", views.BoecSeasons, basename="boec-seasons")
 boec_router.register(r"history", views.BoecParticipantHistory, basename="boec-history")
+boec_router.register(r"progress", views.BoecProgress, basename="boec-progress")
 
 router.register(r"conference", views.ConferenceViewSet)
 

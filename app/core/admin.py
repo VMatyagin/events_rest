@@ -148,6 +148,14 @@ class TicketScanAdmin(CompareVersionAdmin, admin.ModelAdmin):
     pass
 
 
+class ActivityAdmin(CompareVersionAdmin, admin.ModelAdmin):
+    pass
+
+
+class AchievementsAdmin(CompareVersionAdmin, admin.ModelAdmin):
+    pass
+
+
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Shtab, ShtabAdmin)
 admin.site.register(models.Area, AreaAdmin)
@@ -163,3 +171,5 @@ admin.site.register(models.Nomination, NominationAdmin)
 admin.site.register(models.Conference, ConferenceAdmin)
 admin.site.register(models.Ticket, TicketAdmin)
 admin.site.register(models.TicketScan, TicketScanAdmin)
+admin.site.register(models.Achievement, AchievementsAdmin)
+admin.site.register(models.Activity, ActivityAdmin)

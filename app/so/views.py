@@ -21,6 +21,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from reversion.views import RevisionMixin
 from so import serializers
+from user.serializers import ActivitySerailizer
 
 
 class ShtabViewSet(RevisionMixin, viewsets.ModelViewSet):
@@ -131,6 +132,62 @@ class BoecParticipantHistory(RevisionMixin, viewsets.GenericViewSet):
                 "competition_participant": competition_participant_serializer.data,
             }
         )
+
+
+def generateBoecProgess(pk):
+    try:
+        boec = Boec.objects.get(id=pk)
+
+        event_participant = boec.event_participation.filter(isApproved=True)
+        participation_default = event_participant.filter(worth=0).count()
+        participation_volonteer = event_participant.filter(worth=1).count()
+        participation_organizer = event_participant.filter(worth=2).count()
+
+        competition_participant = boec.competition_participation.filter(
+            competition__ratingless=False
+        )
+
+        # просто подача заявок вместе с победами
+        competition_default = competition_participant.count()
+        competition_playoff = competition_participant.filter(worth=1).count()
+
+        with_nomination = competition_participant.filter(
+            worth=1, nomination__isnull=False
+        )
+
+        nominations_count = with_nomination.count()
+
+        sport_wins = with_nomination.filter(competition__event__worth=2).count()
+        art_wins = with_nomination.filter(competition__event__worth=1).count()
+
+        seasons = boec.seasons.filter(isCandidate=False, isAccepted=True).count()
+
+    except (Boec.DoesNotExist, ValidationError):
+        msg = _("Boec doesnt exists.")
+        raise ValidationError({"error": msg}, code="validation")
+
+    return {
+        "participation_count": participation_default,
+        "volonteer_count": participation_volonteer,
+        "organizer_count": participation_organizer,
+        "competition_default": competition_default,
+        "competition_playoff": competition_playoff,
+        "nominations": nominations_count,
+        "seasons": seasons,
+        "sport_wins": sport_wins,
+        "art_wins": art_wins,
+    }
+
+
+class BoecProgress(RevisionMixin, viewsets.ViewSet):
+    serializer_class = ActivitySerailizer
+    authentication_classes = (VKAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    pagination_class = None
+
+    def list(self, request, boec_pk=None):
+        progress = generateBoecProgess(pk=boec_pk)
+        return Response(progress)
 
 
 class BrigadeViewSet(RevisionMixin, viewsets.ModelViewSet):
